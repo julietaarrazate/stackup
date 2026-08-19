@@ -28,6 +28,23 @@ export type Application = {
   repository_url: string | null;
 };
 
+export type Cost = {
+  id: string;
+  application_id: string;
+  service_id: string;
+  environment_id: string | null;
+  name: string;
+  category: string | null;
+  billing_type: "fixed" | "usage" | "one_time";
+  amount: string;
+  currency: string;
+  frequency: "weekly" | "monthly" | "quarterly" | "yearly" | "custom";
+  status: "active" | "paused" | "ended";
+  certainty: "confirmed" | "estimated" | "projected";
+  monthly_equivalent: string;
+  annualized_cost: string;
+};
+
 /** Returns the authenticated user, or null if there is no valid session. */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   const res = await apiFetchWithSession("/api/v1/users/me");
@@ -55,4 +72,82 @@ export async function listApplications(
   );
   if (!res.ok) return [];
   return (await res.json()) as Application[];
+}
+
+export async function listCosts(workspaceId: string): Promise<Cost[]> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/costs`,
+  );
+  if (!res.ok) return [];
+  return (await res.json()) as Cost[];
+}
+
+export type Vendor = {
+  id: string;
+  name: string;
+  is_global: boolean;
+};
+
+export type CurrencyTotal = {
+  currency: string;
+  monthly: string;
+  annualized: string;
+};
+export type GroupTotal = {
+  label: string;
+  currency: string;
+  monthly: string;
+  annualized: string;
+};
+export type CertaintyTotal = {
+  certainty: string;
+  currency: string;
+  monthly: string;
+};
+export type RecentChange = {
+  cost_id: string;
+  cost_name: string;
+  amount: string;
+  currency: string;
+  effective_from: string;
+  reason: string | null;
+};
+export type OverviewReport = {
+  total: CurrencyTotal[];
+  by_certainty: CertaintyTotal[];
+  by_category: GroupTotal[];
+  by_vendor: GroupTotal[];
+  by_application: GroupTotal[];
+  recent_changes: RecentChange[];
+  cost_item_count: number;
+};
+export type EvolutionPoint = { period: string; currency: string; monthly: string };
+export type EvolutionReport = { points: EvolutionPoint[] };
+
+export async function listVendors(workspaceId: string): Promise<Vendor[]> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/vendors`,
+  );
+  if (!res.ok) return [];
+  return (await res.json()) as Vendor[];
+}
+
+export async function getOverview(
+  workspaceId: string,
+): Promise<OverviewReport | null> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/reports/overview`,
+  );
+  if (!res.ok) return null;
+  return (await res.json()) as OverviewReport;
+}
+
+export async function getEvolution(
+  workspaceId: string,
+): Promise<EvolutionReport> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/reports/evolution?months=6`,
+  );
+  if (!res.ok) return { points: [] };
+  return (await res.json()) as EvolutionReport;
 }

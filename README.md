@@ -10,17 +10,20 @@ category.
 
 ## Status
 
-Phase 3 of 9 complete. Phases 0–2 (architecture/ADRs, project foundation,
-CI, deploy wiring, auth + multi-tenancy + RBAC) are done. See
-`docs/product/roadmap.md` for the full phased plan. The cost model,
-dashboard and reports arrive in later phases.
+Phase 5 of 9 complete (Phases 0–3 merged to `main`; Phase 4 in PR #2). See
+`docs/product/roadmap.md` for the full phased plan. Expenses & evidence
+(Phase 6) come next.
 
 Working today: register, login, logout (revocable server-side sessions),
-role-based access control, and workspace-scoped CRUD for applications,
-environments, vendors and services (with a shared global vendor catalog),
-all through a Next.js BFF in front of FastAPI and verified end-to-end. A
-dev/test seed provides the vendor catalog plus Oído/Cuadra/Stackup
-examples.
+role-based access control, workspace-scoped CRUD for applications,
+environments, vendors and services (shared global vendor catalog),
+**cost tracking** with a pure Decimal Cost Engine (monthly-equivalent,
+annualized, append-only price history), and a **dashboard** — total stack
+cost, change vs previous period, cost by category / application / vendor,
+confirmed vs estimated, a monthly evolution chart, and recent changes, all
+aggregated in the backend. Everything runs through a Next.js BFF in front
+of FastAPI, is CI-gated, and is verified end-to-end. A dev/test seed
+provides the vendor catalog plus Oído/Cuadra/Stackup examples.
 
 ## Repository layout
 

@@ -12,9 +12,14 @@ from stackup_api.core.db import Base
 from stackup_api.models.access_token import AccessToken
 from stackup_api.models.application import Application, Environment
 from stackup_api.models.audit import AuditEvent
+from stackup_api.models.cost import CostHistory, CostItem
 from stackup_api.models.enums import (
     ApplicationStatus,
+    BillingType,
+    Certainty,
+    CostStatus,
     EnvironmentType,
+    Frequency,
     WorkspaceRole,
 )
 from stackup_api.models.user import User
@@ -35,4 +40,10 @@ __all__ = [
     "EnvironmentType",
     "Vendor",
     "Service",
+    "CostItem",
+    "CostHistory",
+    "BillingType",
+    "Frequency",
+    "Certainty",
+    "CostStatus",
 ]
