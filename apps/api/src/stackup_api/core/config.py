@@ -1,0 +1,85 @@
+"""Application configuration, loaded from environment variables.
+
+No secret ever has a real default here; production must set them explicitly.
+"""
+
+from __future__ import annotations
+
+from functools import lru_cache
+from typing import Literal
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+Environment = Literal["development", "test", "staging", "production"]
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False,
+    )
+
+    # --- Runtime ---
+    environment: Environment = "development"
+    debug: bool = False
+
+    # --- Database ---
+    # Async SQLAlchemy URL, e.g.
+    # postgresql+asyncpg://user:pass@host/db  (Neon in every real environment).
+    # Defaults to a local aiosqlite file only so the app and tests can boot
+    # without external infra; production MUST override this with Neon.
+    database_url: str = "sqlite+aiosqlite:///./stackup_dev.db"
+
+    # --- CORS: the single first-party origin (the Next.js BFF) ---
+    frontend_origin: str = "http://localhost:3000"
+
+    # --- Authentication (ADR-003) ---
+    # Signs email-verification and password-reset tokens. MUST be overridden
+    # in production; the dev default is rejected at startup when deployed.
+    auth_secret: str = "dev-insecure-change-me"
+    # Session lifetime for the database-backed, revocable session token.
+    session_lifetime_seconds: int = Field(default=60 * 60 * 24 * 7, gt=0)  # 7 days
+    session_cookie_name: str = "stackup_session"
+    # Parent domain for the session cookie (e.g. ".stackup.ar") so it is valid
+    # across app/api subdomains. None -> host-only cookie (local dev).
+    cookie_domain: str | None = None
+
+    # --- Observability ---
+    sentry_dsn: str | None = None
+    sentry_traces_sample_rate: float = Field(default=0.1, ge=0.0, le=1.0)
+
+    # --- Uploads (Phase 6) ---
+    max_upload_size_mb: int = Field(default=10, gt=0)
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment == "production"
+
+    @property
+    def cookie_secure(self) -> bool:
+        # Secure cookies everywhere except plain-HTTP local development.
+        return self.environment != "development"
+
+    def validate_for_runtime(self) -> None:
+        """Fail fast on unsafe production configuration."""
+        if self.environment in ("staging", "production"):
+            if self.database_url.startswith("sqlite"):
+                raise RuntimeError(
+                    "SQLite is not permitted in staging/production (ADR-002)."
+                )
+            if self.auth_secret == "dev-insecure-change-me":
+                raise RuntimeError(
+                    "AUTH_SECRET must be set to a strong secret in staging/production."
+                )
+
+    @property
+    def cors_origins(self) -> list[str]:
+        return [self.frontend_origin]
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()

@@ -1,0 +1,50 @@
+# Render blueprint for STACKUP.
+#
+# IMPORTANT (ADR-002): no PostgreSQL is defined here. The database is Neon,
+# never Render's free Postgres. Render hosts compute only.
+#
+# Region: virginia — same metro as the Neon project (aws-us-east-1) to
+# minimize FastAPI <-> PostgreSQL latency (ADR-007).
+#
+# Secrets (DATABASE_URL, SENTRY_DSN, etc.) are set in the Render dashboard,
+# never committed — every secret below is `sync: false`.
+
+services:
+  - type: web
+    name: stackup-api
+    runtime: python
+    region: virginia
+    plan: free
+    rootDir: apps/api
+    buildCommand: pip install uv && uv sync
+    startCommand: uv run uvicorn stackup_api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        sync: false # Neon connection string (postgresql+asyncpg://...)
+      - key: FRONTEND_ORIGIN
+        sync: false # e.g. https://app.stackup.ar
+      - key: SENTRY_DSN
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.11"
+
+  # The arq background worker is added in Phase 7 (ADR-005). It will be a
+  # second service of type `worker` in this blueprint, sharing rootDir
+  # apps/api and reading the same DATABASE_URL plus REDIS_URL (Upstash).
+  #
+  # - type: worker
+  #   name: stackup-worker
+  #   runtime: python
+  #   region: virginia
+  #   plan: free
+  #   rootDir: apps/api
+  #   buildCommand: pip install uv && uv sync
+  #   startCommand: uv run arq stackup_api.worker.settings.WorkerSettings
+
+# Database migrations run as an explicit step, not inside web startup
+# (avoids races between instances). On Render this is a one-off job or the
+# paid preDeployCommand: `uv run alembic upgrade head`. See
+# docs/operations/deployment.md.
