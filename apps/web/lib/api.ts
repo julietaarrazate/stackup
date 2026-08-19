@@ -8,6 +8,7 @@
  * sees the backend URL or any secret.
  */
 import "server-only";
+import { cookies } from "next/headers";
 
 const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:8000";
 
@@ -24,6 +25,15 @@ export async function apiFetch(
     },
     cache: "no-store",
   });
+}
+
+/** apiFetch with the current request's cookies forwarded automatically. */
+export async function apiFetchWithSession(
+  path: string,
+  init?: RequestInit,
+): Promise<Response> {
+  const cookieHeader = (await cookies()).toString();
+  return apiFetch(path, { ...init, cookie: cookieHeader });
 }
 
 export function apiBaseUrl(): string {

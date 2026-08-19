@@ -67,3 +67,41 @@ BFF that forwards the session cookie:
 - We take on a Python dependency (`fastapi-users`) instead of an
   ecosystem-standard JS one; acceptable since the domain and authorization
   boundary already live in Python.
+
+## Implementation notes (as built in Phase 2)
+
+- Version pinned: `fastapi-users[sqlalchemy]` 15.x.
+- Transport: `CookieTransport` (HttpOnly; Secure in every non-local
+  environment; SameSite=Lax; cookie name `stackup_session`; parent-domain
+  scoped via `COOKIE_DOMAIN` so it is valid across app/api subdomains).
+- Strategy: `DatabaseStrategy` over an `access_token` table — sessions are
+  server-side and **revocable**: logout deletes the row and the session is
+  invalid immediately (satisfies the session-revocation requirement; a
+  self-contained JWT could not do this).
+- Rate limiting on `login`/`register`/`forgot-password` via an in-memory
+  fixed-window limiter today; a Redis (Upstash) backend replaces the store
+  in Phase 5+ without touching call sites (ADR-005).
+- `AUTH_SECRET` signs reset/verification tokens and is rejected at startup
+  if left at the dev default in staging/production.
+
+## Risk: fastapi-users is in maintenance mode (recorded 2026-08)
+
+As of the 15.x line, fastapi-users is in **maintenance mode** — security
+and dependency updates continue, but no new features, and the maintainers
+have signalled a successor Python auth toolkit is being worked on.
+
+- **Why we still chose it:** it is mature, security-maintained, and
+  purpose-built for exactly FastAPI + SQLAlchemy; the requirements forbid
+  homemade auth; and the two named alternatives are worse fits (Better Auth
+  is TypeScript-only; NextAuth/Auth.js expects to own auth inside Next.js).
+  For an MVP that needs register/login/logout/reset/verify/revocable
+  sessions today, it is the lowest-risk option that satisfies the brief.
+- **Mitigation / migration path:** our design already isolates the blast
+  radius. Sessions are plain rows in `access_token`; users are plain rows
+  in `user`; the cookie is a standard HttpOnly session cookie; and every
+  authorization decision lives in our own `core/policy.py` and
+  `get_workspace_context`, not in the auth library. Replacing fastapi-users
+  later (with its successor or another library) means swapping the
+  register/login/session plumbing behind the same cookie contract, with the
+  domain, policy, and BFF untouched. Revisit when the successor reaches a
+  stable release.

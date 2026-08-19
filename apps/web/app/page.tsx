@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { BrandWordmark } from "@/components/brand";
+import { Button } from "@/components/ui/button";
 
 const QUESTIONS = [
   "¿Cuánto cuesta mi aplicación por mes?",
@@ -12,9 +14,14 @@ export default function Home() {
     <main className="mx-auto flex min-h-dvh max-w-5xl flex-col px-6">
       <header className="flex items-center justify-between py-6">
         <BrandWordmark />
-        <span className="text-sm text-[var(--muted-foreground)]">
-          Fase 1 · Fundación
-        </span>
+        <nav className="flex items-center gap-2">
+          <Link href="/login">
+            <Button variant="ghost">Ingresar</Button>
+          </Link>
+          <Link href="/register">
+            <Button>Crear cuenta</Button>
+          </Link>
+        </nav>
       </header>
 
       <section className="flex flex-1 flex-col justify-center py-16">
