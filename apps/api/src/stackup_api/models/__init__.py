@@ -10,9 +10,15 @@ from __future__ import annotations
 
 from stackup_api.core.db import Base
 from stackup_api.models.access_token import AccessToken
+from stackup_api.models.application import Application, Environment
 from stackup_api.models.audit import AuditEvent
-from stackup_api.models.enums import WorkspaceRole
+from stackup_api.models.enums import (
+    ApplicationStatus,
+    EnvironmentType,
+    WorkspaceRole,
+)
 from stackup_api.models.user import User
+from stackup_api.models.vendor import Service, Vendor
 from stackup_api.models.workspace import Workspace, WorkspaceMember
 
 __all__ = [
@@ -23,4 +29,10 @@ __all__ = [
     "WorkspaceMember",
     "WorkspaceRole",
     "AuditEvent",
+    "Application",
+    "Environment",
+    "ApplicationStatus",
+    "EnvironmentType",
+    "Vendor",
+    "Service",
 ]

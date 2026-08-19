@@ -5,13 +5,17 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from stackup_api import __version__
 from stackup_api.api.health import router as health_router
+from stackup_api.api.v1.applications import router as applications_router
 from stackup_api.api.v1.router import api_router
+from stackup_api.api.v1.vendors import router as vendors_router
 from stackup_api.api.v1.workspaces import router as workspaces_router
 from stackup_api.core.config import get_settings
 from stackup_api.core.logging import configure_logging, get_logger
@@ -43,6 +47,20 @@ def create_app() -> FastAPI:
         version=__version__,
         lifespan=lifespan,
     )
+
+    @app.exception_handler(IntegrityError)
+    async def _integrity_error_handler(
+        _request: Request, _exc: IntegrityError
+    ) -> JSONResponse:
+        # Uniqueness / FK / constraint violations become a clean 409 without
+        # leaking the underlying SQL or schema details.
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content={
+                "detail": "The request conflicts with an existing resource "
+                "or a data integrity constraint."
+            },
+        )
 
     app.add_middleware(BaseHTTPMiddleware, dispatch=request_id_middleware)
     app.add_middleware(
@@ -93,6 +111,8 @@ def create_app() -> FastAPI:
     # --- Domain API ---
     app.include_router(api_router)  # /api/v1/meta
     app.include_router(workspaces_router, prefix="/api/v1")
+    app.include_router(applications_router, prefix="/api/v1")
+    app.include_router(vendors_router, prefix="/api/v1")
 
     return app
 

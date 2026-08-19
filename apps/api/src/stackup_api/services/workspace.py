@@ -2,27 +2,15 @@
 
 from __future__ import annotations
 
-import re
 import secrets
-import unicodedata
 import uuid
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from stackup_api.core.slug import slugify
 from stackup_api.models.enums import WorkspaceRole
 from stackup_api.models.workspace import Workspace, WorkspaceMember
-
-_SLUG_STRIP = re.compile(r"[^a-z0-9]+")
-
-
-def slugify(name: str) -> str:
-    # Transliterate accented characters (Oído -> oido) before stripping, so
-    # Spanish names produce clean slugs rather than dashes for each accent.
-    normalized = unicodedata.normalize("NFKD", name)
-    ascii_only = normalized.encode("ascii", "ignore").decode("ascii")
-    base = _SLUG_STRIP.sub("-", ascii_only.strip().lower()).strip("-")
-    return base or "workspace"
 
 
 async def _unique_slug(session: AsyncSession, name: str) -> str:

@@ -31,10 +31,22 @@ url, created_at, updated_at`.
 
 ## Vendor
 
-`id, name, slug (unique), website, logo, category, created_at, updated_at`.
-Not hardcoded in the UI — seeded as data, extensible by any workspace
-member with permission (e.g. Vercel, Neon, Render, Cloudinary, Sentry,
-GitHub, Resend, Cloudflare).
+`id, workspace_id (nullable), name, slug, website, logo, category,
+created_at, updated_at`. Not hardcoded in the UI — seeded as data (e.g.
+Vercel, Neon, Render, Cloudinary, Sentry, GitHub, Resend, Cloudflare).
+
+`workspace_id` makes this a shared-catalog-with-tenant-extensions model:
+
+- **NULL** → a global catalog entry seeded for everyone. Slug is globally
+  unique (enforced by a partial unique index where `workspace_id IS NULL`).
+- **set** → a private vendor a workspace member created. Slug is unique
+  within that workspace (`unique(workspace_id, slug)`).
+
+Reads return global + own rows; writes only ever touch own-workspace rows,
+so one workspace can neither see nor mutate another's custom vendors (proven
+by Phase 3 isolation tests). Services inherit their vendor's scope — a
+workspace may only add services to its own vendors, never the global
+catalog.
 
 ## Service
 
