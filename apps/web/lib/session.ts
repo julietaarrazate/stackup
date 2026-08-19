@@ -17,6 +17,17 @@ export type Workspace = {
   timezone: string;
 };
 
+export type Application = {
+  id: string;
+  workspace_id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  status: "active" | "archived";
+  production_url: string | null;
+  repository_url: string | null;
+};
+
 /** Returns the authenticated user, or null if there is no valid session. */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   const res = await apiFetchWithSession("/api/v1/users/me");
@@ -28,4 +39,20 @@ export async function listWorkspaces(): Promise<Workspace[]> {
   const res = await apiFetchWithSession("/api/v1/workspaces");
   if (!res.ok) return [];
   return (await res.json()) as Workspace[];
+}
+
+export async function getWorkspace(id: string): Promise<Workspace | null> {
+  const res = await apiFetchWithSession(`/api/v1/workspaces/${id}`);
+  if (!res.ok) return null;
+  return (await res.json()) as Workspace;
+}
+
+export async function listApplications(
+  workspaceId: string,
+): Promise<Application[]> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/applications`,
+  );
+  if (!res.ok) return [];
+  return (await res.json()) as Application[];
 }

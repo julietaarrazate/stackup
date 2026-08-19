@@ -17,7 +17,7 @@ export function CreateWorkspace() {
     if (!name.trim()) return;
     setBusy(true);
     setError(null);
-    const res = await fetch("/api/workspaces", {
+    const res = await fetch("/api/v1/workspaces", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ name: name.trim() }),

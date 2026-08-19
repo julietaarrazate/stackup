@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { ChevronRight } from "lucide-react";
 import { getCurrentUser, listWorkspaces } from "@/lib/session";
 import { BrandWordmark } from "@/components/brand";
 import { LogoutButton } from "@/components/logout-button";
@@ -39,16 +41,19 @@ export default async function AppHome() {
         ) : (
           <ul className="flex flex-col gap-2">
             {workspaces.map((ws) => (
-              <li
-                key={ws.id}
-                className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
-              >
-                <div>
-                  <p className="font-medium">{ws.name}</p>
-                  <p className="text-xs text-[var(--muted-foreground)]">
-                    /{ws.slug} · {ws.base_currency}
-                  </p>
-                </div>
+              <li key={ws.id}>
+                <Link
+                  href={`/app/${ws.id}`}
+                  className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 transition-colors hover:bg-[var(--surface-2)]"
+                >
+                  <div>
+                    <p className="font-medium">{ws.name}</p>
+                    <p className="text-xs text-[var(--muted-foreground)]">
+                      /{ws.slug} · {ws.base_currency}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-[var(--muted-foreground)]" />
+                </Link>
               </li>
             ))}
           </ul>
