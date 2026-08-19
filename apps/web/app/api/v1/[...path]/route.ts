@@ -13,10 +13,12 @@ async function handle(req: NextRequest, path: string[]) {
   const search = req.nextUrl.search;
   const method = req.method;
   const hasBody = method !== "GET" && method !== "HEAD";
-  const body = hasBody ? await req.text() : undefined;
+  // Forward the raw body and original content-type so JSON, multipart uploads
+  // and any other payload pass through unchanged.
+  const body = hasBody ? await req.arrayBuffer() : undefined;
   return proxyToBackend(`/api/v1/${suffix}${search}`, {
     method,
-    headers: hasBody ? { "content-type": "application/json" } : undefined,
+    contentType: hasBody ? req.headers.get("content-type") : undefined,
     body,
   });
 }

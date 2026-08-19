@@ -16,6 +16,8 @@ dependencies = [
     "sentry-sdk[fastapi]>=2.14,<3",
     "fastapi-users[sqlalchemy]>=15,<16",
     "pydantic[email]>=2.9,<3",
+    "python-multipart>=0.0.9",
+    "boto3>=1.35,<2",
 ]
 
 [project.optional-dependencies]
@@ -70,6 +72,10 @@ namespace_packages = true
 [[tool.mypy.overrides]]
 module = ["tests.*"]
 disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = ["boto3.*", "botocore.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

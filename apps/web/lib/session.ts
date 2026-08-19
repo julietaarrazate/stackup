@@ -124,6 +124,17 @@ export type OverviewReport = {
 export type EvolutionPoint = { period: string; currency: string; monthly: string };
 export type EvolutionReport = { points: EvolutionPoint[] };
 
+export type Expense = {
+  id: string;
+  cost_item_id: string;
+  amount: string;
+  currency: string;
+  paid_at: string | null;
+  status: "pending" | "paid" | "failed" | "refunded";
+  invoice_number: string | null;
+  evidence_id: string | null;
+};
+
 export async function listVendors(workspaceId: string): Promise<Vendor[]> {
   const res = await apiFetchWithSession(
     `/api/v1/workspaces/${workspaceId}/vendors`,
@@ -150,4 +161,12 @@ export async function getEvolution(
   );
   if (!res.ok) return { points: [] };
   return (await res.json()) as EvolutionReport;
+}
+
+export async function listExpenses(workspaceId: string): Promise<Expense[]> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/expenses`,
+  );
+  if (!res.ok) return [];
+  return (await res.json()) as Expense[];
 }

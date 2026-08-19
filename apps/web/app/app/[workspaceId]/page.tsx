@@ -8,12 +8,14 @@ import {
   getWorkspace,
   listApplications,
   listCosts,
+  listExpenses,
   listVendors,
 } from "@/lib/session";
 import { BrandWordmark } from "@/components/brand";
 import { CreateApplication } from "@/components/create-application";
 import { CreateCost } from "@/components/create-cost";
 import { Dashboard } from "@/components/dashboard";
+import { RecordExpense } from "@/components/record-expense";
 import { formatMoney } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Workspace" };
@@ -35,13 +37,16 @@ export default async function WorkspaceDetail({
   const workspace = await getWorkspace(workspaceId);
   if (!workspace) notFound();
 
-  const [applications, vendors, costs, overview, evolution] = await Promise.all([
-    listApplications(workspaceId),
-    listVendors(workspaceId),
-    listCosts(workspaceId),
-    getOverview(workspaceId),
-    getEvolution(workspaceId),
-  ]);
+  const [applications, vendors, costs, overview, evolution, expenses] =
+    await Promise.all([
+      listApplications(workspaceId),
+      listVendors(workspaceId),
+      listCosts(workspaceId),
+      getOverview(workspaceId),
+      getEvolution(workspaceId),
+      listExpenses(workspaceId),
+    ]);
+  const costName = new Map(costs.map((c) => [c.id, c.name]));
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-3xl flex-col px-6">
@@ -155,8 +160,46 @@ export default async function WorkspaceDetail({
         )}
       </section>
 
+      {costs.length > 0 ? (
+        <section className="flex flex-col gap-4 py-4">
+          <h2 className="text-lg font-semibold tracking-tight">
+            Pagos y comprobantes
+          </h2>
+          <RecordExpense workspaceId={workspaceId} costs={costs} />
+          {expenses.length > 0 ? (
+            <ul className="flex flex-col gap-2">
+              {expenses.map((e) => (
+                <li
+                  key={e.id}
+                  className="tabular flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {costName.get(e.cost_item_id) ?? "Costo"}
+                    </p>
+                    <p className="text-xs text-[var(--muted-foreground)]">
+                      {e.paid_at ?? "sin fecha"}
+                      {e.invoice_number ? ` · ${e.invoice_number}` : ""}
+                      {e.evidence_id ? " · 📎 comprobante" : ""}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">
+                      {formatMoney(e.amount, e.currency)}
+                    </p>
+                    <p className="text-xs text-[var(--muted-foreground)]">
+                      {e.status}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
+
       <footer className="mt-auto border-t border-[var(--border)] py-6 text-sm text-[var(--muted-foreground)]">
-        El dashboard con evolución y reportes llega en la próxima fase.
+        Background jobs e integración con GitHub llegan en las próximas fases.
       </footer>
     </main>
   );
