@@ -10,9 +10,14 @@ category.
 
 ## Status
 
-Phase 1 of 9 (project foundation) in progress. See
-`docs/product/roadmap.md` for the full phased plan. Authentication,
-workspaces, cost model, dashboard and reports arrive in later phases.
+Phase 2 of 9 complete (auth + multi-tenancy + RBAC). Phases 0–1
+(architecture, ADRs, project foundation, CI, deploy wiring) are done. See
+`docs/product/roadmap.md` for the full phased plan. The cost model,
+dashboard and reports arrive in later phases.
+
+Working today: register, login, logout (revocable server-side sessions),
+create/list workspaces with role-based access control, all through a
+Next.js BFF in front of FastAPI, verified end-to-end.
 
 ## Repository layout
 
