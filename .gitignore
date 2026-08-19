@@ -11,6 +11,8 @@ venv/
 out/
 dist/
 build/
+next-env.d.ts
+*.tsbuildinfo
 
 # Env
 .env
