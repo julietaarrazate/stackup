@@ -28,6 +28,23 @@ export type Application = {
   repository_url: string | null;
 };
 
+export type Cost = {
+  id: string;
+  application_id: string;
+  service_id: string;
+  environment_id: string | null;
+  name: string;
+  category: string | null;
+  billing_type: "fixed" | "usage" | "one_time";
+  amount: string;
+  currency: string;
+  frequency: "weekly" | "monthly" | "quarterly" | "yearly" | "custom";
+  status: "active" | "paused" | "ended";
+  certainty: "confirmed" | "estimated" | "projected";
+  monthly_equivalent: string;
+  annualized_cost: string;
+};
+
 /** Returns the authenticated user, or null if there is no valid session. */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   const res = await apiFetchWithSession("/api/v1/users/me");
@@ -55,4 +72,26 @@ export async function listApplications(
   );
   if (!res.ok) return [];
   return (await res.json()) as Application[];
+}
+
+export async function listCosts(workspaceId: string): Promise<Cost[]> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/costs`,
+  );
+  if (!res.ok) return [];
+  return (await res.json()) as Cost[];
+}
+
+export type Vendor = {
+  id: string;
+  name: string;
+  is_global: boolean;
+};
+
+export async function listVendors(workspaceId: string): Promise<Vendor[]> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/vendors`,
+  );
+  if (!res.ok) return [];
+  return (await res.json()) as Vendor[];
 }

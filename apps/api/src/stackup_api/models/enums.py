@@ -22,3 +22,29 @@ class EnvironmentType(enum.StrEnum):
     staging = "staging"
     production = "production"
     other = "other"
+
+
+class BillingType(enum.StrEnum):
+    fixed = "fixed"
+    usage = "usage"
+    one_time = "one_time"
+
+
+class Frequency(enum.StrEnum):
+    weekly = "weekly"
+    monthly = "monthly"
+    quarterly = "quarterly"
+    yearly = "yearly"
+    custom = "custom"
+
+
+class Certainty(enum.StrEnum):
+    confirmed = "confirmed"
+    estimated = "estimated"
+    projected = "projected"
+
+
+class CostStatus(enum.StrEnum):
+    active = "active"
+    paused = "paused"
+    ended = "ended"
