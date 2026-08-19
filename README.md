@@ -10,14 +10,17 @@ category.
 
 ## Status
 
-Phase 2 of 9 complete (auth + multi-tenancy + RBAC). Phases 0–1
-(architecture, ADRs, project foundation, CI, deploy wiring) are done. See
+Phase 3 of 9 complete. Phases 0–2 (architecture/ADRs, project foundation,
+CI, deploy wiring, auth + multi-tenancy + RBAC) are done. See
 `docs/product/roadmap.md` for the full phased plan. The cost model,
 dashboard and reports arrive in later phases.
 
 Working today: register, login, logout (revocable server-side sessions),
-create/list workspaces with role-based access control, all through a
-Next.js BFF in front of FastAPI, verified end-to-end.
+role-based access control, and workspace-scoped CRUD for applications,
+environments, vendors and services (with a shared global vendor catalog),
+all through a Next.js BFF in front of FastAPI and verified end-to-end. A
+dev/test seed provides the vendor catalog plus Oído/Cuadra/Stackup
+examples.
 
 ## Repository layout
 
