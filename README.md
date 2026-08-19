@@ -10,8 +10,30 @@ category.
 
 ## Status
 
-Early architecture phase. See `docs/product/roadmap.md` for the phased
-implementation plan (Phase 0 of 9 in progress).
+Phase 1 of 9 (project foundation) in progress. See
+`docs/product/roadmap.md` for the full phased plan. Authentication,
+workspaces, cost model, dashboard and reports arrive in later phases.
+
+## Repository layout
+
+```
+apps/web/   Next.js frontend (Vercel) — App Router, TS strict, Tailwind, BFF
+apps/api/   FastAPI backend + worker (Render) — SQLAlchemy 2.x, Alembic
+docs/       architecture, ADRs, product, operations, security
+.github/    CI (lint · typecheck · test · build · migrations)
+render.yaml Render blueprint (compute only — DB is Neon, never Render)
+```
+
+## Getting started
+
+Backend and frontend each have their own README with local-dev and
+quality-check commands:
+
+- `apps/api/README.md`
+- `apps/web/README.md`
+
+Copy `.env.example` to the per-app env files and fill in values (no real
+secrets are committed).
 
 ## Documentation
 
