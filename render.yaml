@@ -3,17 +3,23 @@
 # IMPORTANT (ADR-002): no PostgreSQL is defined here. The database is Neon,
 # never Render's free Postgres. Render hosts compute only.
 #
-# Region: virginia — same metro as the Neon project (aws-us-east-1) to
+# Region: ohio — same metro as the STACKUP Neon project (aws-us-east-2) to
 # minimize FastAPI <-> PostgreSQL latency (ADR-007).
 #
 # Secrets (DATABASE_URL, SENTRY_DSN, etc.) are set in the Render dashboard,
 # never committed — every secret below is `sync: false`.
+#
+# ENVIRONMENT is `staging` until object storage (R2) is configured: the app
+# refuses to start in `production` without R2 (ADR-006). staging still forbids
+# SQLite and the dev AUTH_SECRET and uses Secure cookies. Switch to
+# `production` once STORAGE_* is set. Evidence uploads use an in-process store
+# until then (lost on restart) — everything else is fully durable in Neon.
 
 services:
   - type: web
     name: stackup-api
     runtime: python
-    region: virginia
+    region: ohio
     plan: free
     rootDir: apps/api
     buildCommand: pip install uv && uv sync
@@ -21,12 +27,23 @@ services:
     healthCheckPath: /health
     envVars:
       - key: ENVIRONMENT
-        value: production
+        value: staging
       - key: DATABASE_URL
         sync: false # Neon connection string (postgresql+asyncpg://...)
+      - key: AUTH_SECRET
+        sync: false # strong random secret; signs reset/verify tokens
       - key: FRONTEND_ORIGIN
-        sync: false # e.g. https://app.stackup.ar
+        sync: false # the Vercel frontend URL, e.g. https://stackup-web.vercel.app
       - key: SENTRY_DSN
+        sync: false
+      # Object storage (R2) — set these, then flip ENVIRONMENT to production.
+      - key: STORAGE_ENDPOINT
+        sync: false
+      - key: STORAGE_BUCKET
+        sync: false
+      - key: STORAGE_ACCESS_KEY
+        sync: false
+      - key: STORAGE_SECRET_KEY
         sync: false
       - key: PYTHON_VERSION
         value: "3.11"
