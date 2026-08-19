@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import {
+  getEvolution,
+  getOverview,
   getWorkspace,
   listApplications,
   listCosts,
@@ -11,6 +13,7 @@ import {
 import { BrandWordmark } from "@/components/brand";
 import { CreateApplication } from "@/components/create-application";
 import { CreateCost } from "@/components/create-cost";
+import { Dashboard } from "@/components/dashboard";
 import { formatMoney } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Workspace" };
@@ -32,19 +35,13 @@ export default async function WorkspaceDetail({
   const workspace = await getWorkspace(workspaceId);
   if (!workspace) notFound();
 
-  const [applications, vendors, costs] = await Promise.all([
+  const [applications, vendors, costs, overview, evolution] = await Promise.all([
     listApplications(workspaceId),
     listVendors(workspaceId),
     listCosts(workspaceId),
+    getOverview(workspaceId),
+    getEvolution(workspaceId),
   ]);
-
-  // Display-only monthly totals per currency (authoritative math is the
-  // backend's; this just sums the strings it already computed).
-  const monthlyByCurrency = costs.reduce<Record<string, number>>((acc, c) => {
-    const n = Number(c.monthly_equivalent);
-    if (n > 0) acc[c.currency] = (acc[c.currency] ?? 0) + n;
-    return acc;
-  }, {});
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-3xl flex-col px-6">
@@ -64,24 +61,17 @@ export default async function WorkspaceDetail({
         <p className="text-sm text-[var(--muted-foreground)]">
           /{workspace.slug} · moneda base {workspace.base_currency}
         </p>
-        {Object.keys(monthlyByCurrency).length > 0 ? (
-          <div className="tabular mt-4 flex flex-wrap gap-4">
-            {Object.entries(monthlyByCurrency).map(([cur, total]) => (
-              <div
-                key={cur}
-                className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
-              >
-                <p className="text-xs text-[var(--muted-foreground)]">
-                  Costo mensual ({cur})
-                </p>
-                <p className="text-xl font-semibold">
-                  {formatMoney(total.toFixed(2), cur)}
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : null}
       </section>
+
+      {overview && overview.cost_item_count > 0 ? (
+        <section className="py-2">
+          <Dashboard
+            overview={overview}
+            evolution={evolution}
+            baseCurrency={workspace.base_currency}
+          />
+        </section>
+      ) : null}
 
       <section className="flex flex-col gap-4 py-4">
         <h2 className="text-lg font-semibold tracking-tight">Aplicaciones</h2>
