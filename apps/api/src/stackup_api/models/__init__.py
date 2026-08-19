@@ -19,9 +19,12 @@ from stackup_api.models.enums import (
     Certainty,
     CostStatus,
     EnvironmentType,
+    EvidenceType,
+    ExpenseStatus,
     Frequency,
     WorkspaceRole,
 )
+from stackup_api.models.evidence import Evidence, Expense
 from stackup_api.models.user import User
 from stackup_api.models.vendor import Service, Vendor
 from stackup_api.models.workspace import Workspace, WorkspaceMember
@@ -46,4 +49,8 @@ __all__ = [
     "Frequency",
     "Certainty",
     "CostStatus",
+    "Evidence",
+    "Expense",
+    "EvidenceType",
+    "ExpenseStatus",
 ]

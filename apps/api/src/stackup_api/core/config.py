@@ -51,8 +51,27 @@ class Settings(BaseSettings):
     sentry_dsn: str | None = None
     sentry_traces_sample_rate: float = Field(default=0.1, ge=0.0, le=1.0)
 
-    # --- Uploads (Phase 6) ---
+    # --- Uploads / storage (Phase 6, ADR-006) ---
     max_upload_size_mb: int = Field(default=10, gt=0)
+    # Cloudflare R2 (S3-compatible). When all are set, the R2 backend is used;
+    # otherwise an in-process backend is used (dev/test only). Evidence is
+    # never stored on Render's ephemeral filesystem.
+    storage_endpoint: str | None = None
+    storage_bucket: str | None = None
+    storage_access_key: str | None = None
+    storage_secret_key: str | None = None
+    storage_region: str = "auto"
+
+    @property
+    def storage_configured(self) -> bool:
+        return all(
+            (
+                self.storage_endpoint,
+                self.storage_bucket,
+                self.storage_access_key,
+                self.storage_secret_key,
+            )
+        )
 
     @property
     def is_production(self) -> bool:
@@ -73,6 +92,11 @@ class Settings(BaseSettings):
             if self.auth_secret == "dev-insecure-change-me":
                 raise RuntimeError(
                     "AUTH_SECRET must be set to a strong secret in staging/production."
+                )
+            if self.environment == "production" and not self.storage_configured:
+                raise RuntimeError(
+                    "Object storage (R2) must be configured in production; "
+                    "the in-process backend is dev/test only (ADR-006)."
                 )
 
     @property

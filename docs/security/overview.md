@@ -20,6 +20,12 @@ so this document tracks real state, not aspiration.
   status — no versions, connection strings, or stack traces (tested).
 - **Safe logging.** Structured JSON logs; Sentry configured with
   `send_default_pii=False`.
+- **Evidence upload validation** (Phase 6, ADR-006). Server-side
+  MIME-allowlist (pdf/png/jpeg/webp) + size limit; the object is stored
+  under a random key (never the user filename, which is kept as metadata
+  only); private object store; downloads stream through an authorized
+  endpoint (never a public URL); production requires R2 to be configured
+  (the in-process backend is dev/test only).
 
 ## Committed for later phases (with phase)
 

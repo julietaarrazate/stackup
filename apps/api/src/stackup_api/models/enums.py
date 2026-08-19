@@ -48,3 +48,18 @@ class CostStatus(enum.StrEnum):
     active = "active"
     paused = "paused"
     ended = "ended"
+
+
+class EvidenceType(enum.StrEnum):
+    invoice = "invoice"
+    receipt = "receipt"
+    contract = "contract"
+    screenshot = "screenshot"
+    other = "other"
+
+
+class ExpenseStatus(enum.StrEnum):
+    pending = "pending"
+    paid = "paid"
+    failed = "failed"
+    refunded = "refunded"
