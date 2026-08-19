@@ -14,6 +14,8 @@ dependencies = [
     "asyncpg>=0.30,<0.31",
     "structlog>=24.4,<26",
     "sentry-sdk[fastapi]>=2.14,<3",
+    "fastapi-users[sqlalchemy]>=15,<16",
+    "pydantic[email]>=2.9,<3",
 ]
 
 [project.optional-dependencies]
