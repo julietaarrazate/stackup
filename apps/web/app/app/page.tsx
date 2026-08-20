@@ -24,7 +24,10 @@ export default async function AppHome() {
 
       <section className="py-6">
         <p className="text-sm text-[var(--muted-foreground)]">Sesión iniciada como</p>
-        <p className="font-medium">{user.email}</p>
+        <p className="font-medium">{user.full_name || user.email}</p>
+        {user.full_name ? (
+          <p className="text-xs text-[var(--muted-foreground)]">{user.email}</p>
+        ) : null}
       </section>
 
       <section className="flex flex-col gap-4 py-4">

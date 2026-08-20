@@ -10,6 +10,7 @@ import {
   listEnvironments,
   listVendors,
 } from "@/lib/session";
+import { ApplicationHeaderActions } from "@/components/application-header-actions";
 import { ApplicationTabs } from "@/components/application-tabs";
 import { EntityIcon } from "@/components/entity-icon";
 
@@ -55,16 +56,19 @@ export default async function ApplicationDetailPage({
       </Link>
 
       <div>
-        <div className="flex items-center gap-3">
-          <EntityIcon name={application.name} />
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {application.name}
-          </h1>
-          {application.status !== "active" ? (
-            <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--muted-foreground)]">
-              archivada
-            </span>
-          ) : null}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <EntityIcon name={application.name} />
+            <h1 className="truncate text-2xl font-semibold tracking-tight">
+              {application.name}
+            </h1>
+            {application.status !== "active" ? (
+              <span className="shrink-0 rounded-full border border-[var(--border)] px-2 py-0.5 text-xs text-[var(--muted-foreground)]">
+                archivada
+              </span>
+            ) : null}
+          </div>
+          <ApplicationHeaderActions workspaceId={workspaceId} application={application} />
         </div>
         {application.description ? (
           <p className="mt-1 text-sm text-[var(--muted-foreground)]">

@@ -20,7 +20,11 @@ export default async function WorkspaceLayout({
   if (!workspace) notFound();
 
   return (
-    <WorkspaceShell workspace={workspace} workspaces={workspaces} userEmail={user.email}>
+    <WorkspaceShell
+      workspace={workspace}
+      workspaces={workspaces}
+      userName={user.full_name || user.email}
+    >
       {children}
     </WorkspaceShell>
   );

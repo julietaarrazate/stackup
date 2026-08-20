@@ -5,7 +5,7 @@ from __future__ import annotations
 import datetime
 
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
-from sqlalchemy import DateTime, func
+from sqlalchemy import DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from stackup_api.core.db import Base
@@ -20,6 +20,10 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     """
 
     __tablename__ = "user"
+
+    # Optional display name chosen at registration ("sesión iniciada como
+    # ..."). Falls back to email in the UI when unset.
+    full_name: Mapped[str | None] = mapped_column(String(160), nullable=True)
 
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),

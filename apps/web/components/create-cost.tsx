@@ -161,7 +161,7 @@ export function CreateCost({
           </Field>
         )}
 
-        <Field label="Environment (opcional)" htmlFor="cost-env">
+        <Field label="Entorno (opcional)" htmlFor="cost-env">
           <Select
             id="cost-env"
             value={environmentId}
@@ -177,7 +177,7 @@ export function CreateCost({
           </Select>
         </Field>
 
-        <Field label="Vendor" htmlFor="cost-vendor">
+        <Field label="Proveedor" htmlFor="cost-vendor">
           <Select
             id="cost-vendor"
             value={vendorId}

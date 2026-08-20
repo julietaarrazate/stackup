@@ -31,7 +31,7 @@ type NavItem = {
 function navItems(workspaceId: string): NavItem[] {
   const base = `/app/${workspaceId}`;
   return [
-    { href: base, label: "Overview", icon: LayoutDashboard, exact: true, mobile: true },
+    { href: base, label: "Resumen", icon: LayoutDashboard, exact: true, mobile: true },
     {
       href: `${base}/applications`,
       label: "Aplicaciones",
@@ -55,12 +55,12 @@ function isActive(pathname: string, item: NavItem): boolean {
 export function WorkspaceShell({
   workspace,
   workspaces,
-  userEmail,
+  userName,
   children,
 }: {
   workspace: Workspace;
   workspaces: Workspace[];
-  userEmail: string;
+  userName: string;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -144,7 +144,7 @@ export function WorkspaceShell({
 
         <div className="mt-auto flex flex-col gap-3 border-t border-[var(--border)] pt-4">
           <p className="truncate text-xs text-[var(--muted-foreground)]">
-            {userEmail}
+            {userName}
           </p>
           <LogoutButton />
         </div>

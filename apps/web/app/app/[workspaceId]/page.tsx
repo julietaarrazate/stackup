@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { getEvolution, getOverview, getWorkspace, listApplications } from "@/lib/session";
 import { Dashboard } from "@/components/dashboard";
 
-export const metadata: Metadata = { title: "Overview" };
+export const metadata: Metadata = { title: "Resumen" };
 
 export default async function WorkspaceOverview({
   params,
@@ -24,7 +24,7 @@ export default async function WorkspaceOverview({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Resumen</h1>
         <p className="text-sm text-[var(--muted-foreground)]">
           Cuánto te cuesta realmente mantener {workspace.name}.
         </p>
