@@ -141,6 +141,50 @@ export async function listMembers(workspaceId: string): Promise<Member[]> {
   return (await res.json()) as Member[];
 }
 
+export type GitHubConnection = {
+  id: string;
+  workspace_id: string;
+  github_login: string;
+  created_at: string;
+};
+
+export async function getGithubConnection(
+  workspaceId: string,
+): Promise<GitHubConnection | null> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/integrations/github`,
+  );
+  if (!res.ok) return null;
+  return (await res.json()) as GitHubConnection;
+}
+
+export type Detection = {
+  id: string;
+  workspace_id: string;
+  application_id: string | null;
+  repo_full_name: string;
+  file_path: string;
+  vendor_name: string;
+  category: string | null;
+  evidence: string;
+  confidence: "high" | "medium";
+  status: "pending" | "confirmed" | "dismissed";
+  cost_item_id: string | null;
+  created_at: string;
+};
+
+export async function listDetections(
+  workspaceId: string,
+  detectionStatus?: string,
+): Promise<Detection[]> {
+  const qs = detectionStatus ? `?detection_status=${detectionStatus}` : "";
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/detections${qs}`,
+  );
+  if (!res.ok) return [];
+  return (await res.json()) as Detection[];
+}
+
 export async function listCosts(workspaceId: string): Promise<Cost[]> {
   const res = await apiFetchWithSession(
     `/api/v1/workspaces/${workspaceId}/costs`,

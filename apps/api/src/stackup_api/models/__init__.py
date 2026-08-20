@@ -19,6 +19,8 @@ from stackup_api.models.enums import (
     BillingType,
     Certainty,
     CostStatus,
+    DetectionConfidence,
+    DetectionStatus,
     EnvironmentType,
     EvidenceType,
     ExpenseStatus,
@@ -27,6 +29,7 @@ from stackup_api.models.enums import (
     WorkspaceRole,
 )
 from stackup_api.models.evidence import Evidence, Expense
+from stackup_api.models.integration import Detection, GitHubConnection
 from stackup_api.models.user import User
 from stackup_api.models.vendor import Service, Vendor
 from stackup_api.models.workspace import Workspace, WorkspaceMember
@@ -57,4 +60,8 @@ __all__ = [
     "ExpenseStatus",
     "BackgroundJob",
     "JobStatus",
+    "GitHubConnection",
+    "Detection",
+    "DetectionStatus",
+    "DetectionConfidence",
 ]

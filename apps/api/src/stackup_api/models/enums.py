@@ -70,3 +70,14 @@ class JobStatus(enum.StrEnum):
     running = "running"
     succeeded = "succeeded"
     failed = "failed"
+
+
+class DetectionStatus(enum.StrEnum):
+    pending = "pending"
+    confirmed = "confirmed"
+    dismissed = "dismissed"
+
+
+class DetectionConfidence(enum.StrEnum):
+    high = "high"
+    medium = "medium"

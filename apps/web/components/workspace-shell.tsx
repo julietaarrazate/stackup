@@ -41,6 +41,7 @@ function navItems(workspaceId: string): NavItem[] {
     { href: `${base}/costs`, label: "Costos", icon: Receipt, mobile: true },
     { href: `${base}/vendors`, label: "Proveedores", icon: Building2 },
     { href: `${base}/reports`, label: "Reportes", icon: BarChart3, mobile: true },
+    { href: `${base}/integrations`, label: "Integraciones", icon: Plug },
     { href: `${base}/members`, label: "Miembros", icon: Users },
     { href: `${base}/settings`, label: "Ajustes", icon: Settings, mobile: true },
   ];
@@ -139,13 +140,6 @@ export function WorkspaceShell({
               </Link>
             );
           })}
-          <span className="mt-1 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-[var(--muted-foreground)] opacity-60">
-            <Plug className="h-4 w-4" />
-            Integraciones
-            <span className="ml-auto rounded-full border border-[var(--border)] px-1.5 py-0.5 text-[10px]">
-              pronto
-            </span>
-          </span>
         </nav>
 
         <div className="mt-auto flex flex-col gap-3 border-t border-[var(--border)] pt-4">
