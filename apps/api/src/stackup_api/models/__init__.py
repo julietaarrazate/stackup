@@ -12,6 +12,7 @@ from stackup_api.core.db import Base
 from stackup_api.models.access_token import AccessToken
 from stackup_api.models.application import Application, Environment
 from stackup_api.models.audit import AuditEvent
+from stackup_api.models.background_job import BackgroundJob
 from stackup_api.models.cost import CostHistory, CostItem
 from stackup_api.models.enums import (
     ApplicationStatus,
@@ -22,6 +23,7 @@ from stackup_api.models.enums import (
     EvidenceType,
     ExpenseStatus,
     Frequency,
+    JobStatus,
     WorkspaceRole,
 )
 from stackup_api.models.evidence import Evidence, Expense
@@ -53,4 +55,6 @@ __all__ = [
     "Expense",
     "EvidenceType",
     "ExpenseStatus",
+    "BackgroundJob",
+    "JobStatus",
 ]

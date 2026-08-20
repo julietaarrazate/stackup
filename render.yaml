@@ -48,18 +48,30 @@ services:
       - key: PYTHON_VERSION
         value: "3.11"
 
-  # The arq background worker is added in Phase 7 (ADR-005). It will be a
-  # second service of type `worker` in this blueprint, sharing rootDir
-  # apps/api and reading the same DATABASE_URL plus REDIS_URL (Upstash).
-  #
-  # - type: worker
-  #   name: stackup-worker
-  #   runtime: python
-  #   region: virginia
-  #   plan: free
-  #   rootDir: apps/api
-  #   buildCommand: pip install uv && uv sync
-  #   startCommand: uv run arq stackup_api.worker.settings.WorkerSettings
+  # arq background worker (Phase 7, ADR-005). Shares the apps/api codebase
+  # and DATABASE_URL with the web service; needs its own REDIS_URL (Upstash —
+  # same instance the web service would use once it enqueues jobs from a
+  # request). Runs the daily auto_end_expired_costs cron job today; more
+  # jobs register in stackup_api/worker/tasks.py without a second service.
+  - type: worker
+    name: stackup-worker
+    runtime: python
+    region: ohio
+    plan: free
+    rootDir: apps/api
+    buildCommand: pip install uv && uv sync
+    startCommand: uv run arq stackup_api.worker.settings.WorkerSettings
+    envVars:
+      - key: ENVIRONMENT
+        value: staging
+      - key: DATABASE_URL
+        sync: false # same Neon connection string as stackup-api
+      - key: REDIS_URL
+        sync: false # Upstash Redis, rediss:// (TLS)
+      - key: SENTRY_DSN
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.11"
 
 # Database migrations run as an explicit step, not inside web startup
 # (avoids races between instances). On Render this is a one-off job or the
