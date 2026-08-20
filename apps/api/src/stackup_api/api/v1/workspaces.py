@@ -34,6 +34,18 @@ from stackup_api.services.workspace import create_workspace_with_owner
 router = APIRouter(prefix="/workspaces", tags=["workspaces"])
 
 
+def _member_read(member: WorkspaceMember, email: str) -> MemberRead:
+    return MemberRead(
+        id=member.id,
+        workspace_id=member.workspace_id,
+        user_id=member.user_id,
+        email=email,
+        role=member.role,
+        created_at=member.created_at,
+        updated_at=member.updated_at,
+    )
+
+
 async def _count_owners(session: AsyncSession, workspace_id: uuid.UUID) -> int:
     return (
         await session.scalar(
@@ -160,14 +172,15 @@ async def delete_workspace(
 async def list_members(
     ctx: WorkspaceContext = Depends(get_workspace_context),
     session: AsyncSession = Depends(get_session),
-) -> list[WorkspaceMember]:
+) -> list[MemberRead]:
     require(ctx.role, Action.MEMBER_READ)
     result = await session.execute(
-        select(WorkspaceMember)
+        select(WorkspaceMember, User.email)  # type: ignore[call-overload]
+        .join(User, User.id == WorkspaceMember.user_id)
         .where(WorkspaceMember.workspace_id == ctx.workspace.id)
         .order_by(WorkspaceMember.created_at)
     )
-    return list(result.scalars().all())
+    return [_member_read(member, email) for member, email in result.all()]
 
 
 @router.post(
@@ -179,7 +192,7 @@ async def add_member(
     payload: MemberCreate,
     ctx: WorkspaceContext = Depends(get_workspace_context),
     session: AsyncSession = Depends(get_session),
-) -> WorkspaceMember:
+) -> MemberRead:
     require(ctx.role, Action.MEMBER_MANAGE)
     # Only an owner may grant the owner role.
     if payload.role == WorkspaceRole.owner:
@@ -222,7 +235,7 @@ async def add_member(
     )
     await session.commit()
     await session.refresh(member)
-    return member
+    return _member_read(member, target.email)
 
 
 @router.patch("/{workspace_id}/members/{member_id}", response_model=MemberRead)
@@ -231,7 +244,7 @@ async def update_member_role(
     payload: MemberUpdate,
     ctx: WorkspaceContext = Depends(get_workspace_context),
     session: AsyncSession = Depends(get_session),
-) -> WorkspaceMember:
+) -> MemberRead:
     require(ctx.role, Action.MEMBER_MANAGE)
     member = await session.get(WorkspaceMember, member_id)
     if member is None or member.workspace_id != ctx.workspace.id:
@@ -268,7 +281,9 @@ async def update_member_role(
     )
     await session.commit()
     await session.refresh(member)
-    return member
+    user = await session.get(User, member.user_id)
+    assert user is not None  # FK guarantees this
+    return _member_read(member, user.email)
 
 
 @router.delete(

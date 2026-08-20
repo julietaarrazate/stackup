@@ -120,7 +120,7 @@ async def compute_overview(
         for (cert, cur), amount in sorted(certainty.items())
     ]
 
-    recent = await _recent_changes(session, workspace_id)
+    recent = await _recent_changes(session, workspace_id, **filters)  # type: ignore[arg-type]
 
     return OverviewReport(
         total=totals,
@@ -134,7 +134,14 @@ async def compute_overview(
 
 
 async def _recent_changes(
-    session: AsyncSession, workspace_id: uuid.UUID, limit: int = 8
+    session: AsyncSession,
+    workspace_id: uuid.UUID,
+    *,
+    limit: int = 8,
+    application_id: uuid.UUID | None = None,
+    environment_id: uuid.UUID | None = None,
+    category: str | None = None,
+    currency: str | None = None,
 ) -> list[RecentChange]:
     stmt = (
         select(CostHistory, CostItem.name)
@@ -143,6 +150,14 @@ async def _recent_changes(
         .order_by(CostHistory.created_at.desc())
         .limit(limit)
     )
+    if application_id is not None:
+        stmt = stmt.where(CostItem.application_id == application_id)
+    if environment_id is not None:
+        stmt = stmt.where(CostItem.environment_id == environment_id)
+    if category is not None:
+        stmt = stmt.where(CostItem.category == category)
+    if currency is not None:
+        stmt = stmt.where(CostItem.currency == currency.upper())
     rows = (await session.execute(stmt)).all()
     return [
         RecentChange(

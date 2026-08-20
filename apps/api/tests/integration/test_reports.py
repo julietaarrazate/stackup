@@ -102,6 +102,43 @@ async def test_reports_isolated_by_workspace(
             assert r.status_code == 404
 
 
+async def test_overview_recent_changes_filtered_by_application(
+    client_factory: Callable[[], object],
+) -> None:
+    # recent_changes must respect application_id like every other section of
+    # the overview — otherwise an application's detail page would leak
+    # cost-history entries belonging to other applications in the workspace.
+    async with authed_client(client_factory, "o@example.com") as c:
+        ws = await _setup_with_costs(c)
+        other_app = (
+            await c.post(f"/api/v1/workspaces/{ws}/applications", json={"name": "Otra"})
+        ).json()["id"]
+        vendor = (await c.get(f"/api/v1/workspaces/{ws}/vendors")).json()[0]["id"]
+        service = (
+            await c.get(f"/api/v1/workspaces/{ws}/vendors/{vendor}/services")
+        ).json()[0]["id"]
+        r = await c.post(
+            f"/api/v1/workspaces/{ws}/costs",
+            json={
+                "application_id": other_app,
+                "service_id": service,
+                "name": "Otro costo",
+                "amount": "5.00",
+                "currency": "USD",
+                "frequency": "monthly",
+            },
+        )
+        assert r.status_code == 201, r.text
+
+        r = await c.get(
+            f"/api/v1/workspaces/{ws}/reports/overview?application_id={other_app}"
+        )
+        assert r.status_code == 200
+        data = r.json()
+        assert data["cost_item_count"] == 1
+        assert [rc["cost_name"] for rc in data["recent_changes"]] == ["Otro costo"]
+
+
 async def test_empty_workspace_overview(
     client_factory: Callable[[], object],
 ) -> None:

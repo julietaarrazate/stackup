@@ -28,15 +28,19 @@ export function CreateCost({
   workspaceId,
   applications,
   vendors,
+  lockApplicationId,
 }: {
   workspaceId: string;
   applications: Application[];
   vendors: Vendor[];
+  /** When set, the application is fixed (no selector shown) — used from an
+   * application's own detail page, where it would be redundant to re-pick it. */
+  lockApplicationId?: string;
 }) {
   const router = useRouter();
   const base = `/api/v1/workspaces/${workspaceId}`;
 
-  const [applicationId, setApplicationId] = useState("");
+  const [applicationId, setApplicationId] = useState(lockApplicationId ?? "");
   const [vendorId, setVendorId] = useState("");
   const [serviceId, setServiceId] = useState("");
   const [environmentId, setEnvironmentId] = useState("");
@@ -140,20 +144,22 @@ export function CreateCost({
       <p className="text-sm font-medium">¿Qué estás pagando?</p>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Aplicación" htmlFor="cost-app">
-          <Select
-            id="cost-app"
-            value={applicationId}
-            onChange={(e) => onApplicationChange(e.target.value)}
-          >
-            <option value="">Elegí una…</option>
-            {applications.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
-          </Select>
-        </Field>
+        {lockApplicationId ? null : (
+          <Field label="Aplicación" htmlFor="cost-app">
+            <Select
+              id="cost-app"
+              value={applicationId}
+              onChange={(e) => onApplicationChange(e.target.value)}
+            >
+              <option value="">Elegí una…</option>
+              {applications.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )}
 
         <Field label="Environment (opcional)" htmlFor="cost-env">
           <Select
