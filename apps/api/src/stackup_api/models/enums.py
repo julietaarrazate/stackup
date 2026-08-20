@@ -63,3 +63,10 @@ class ExpenseStatus(enum.StrEnum):
     paid = "paid"
     failed = "failed"
     refunded = "refunded"
+
+
+class JobStatus(enum.StrEnum):
+    queued = "queued"
+    running = "running"
+    succeeded = "succeeded"
+    failed = "failed"
