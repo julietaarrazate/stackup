@@ -72,10 +72,10 @@ export function ApplicationTabs({
   const total = totals.find((t) => t.currency === cur);
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: "overview", label: "Overview" },
+    { id: "overview", label: "Resumen" },
     { id: "costs", label: "Costos" },
-    { id: "environments", label: "Environments" },
-    { id: "history", label: "History" },
+    { id: "environments", label: "Entornos" },
+    { id: "history", label: "Historial" },
   ];
 
   return (

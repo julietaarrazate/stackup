@@ -11,6 +11,7 @@ import { Input, Field } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 
 const schema = z.object({
+  full_name: z.string().max(160).optional(),
   email: z.string().email("Ingresá un email válido."),
   password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres."),
 });
@@ -56,6 +57,16 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
+      {mode === "register" ? (
+        <Field label="Nombre (opcional)" htmlFor="full_name">
+          <Input
+            id="full_name"
+            autoComplete="name"
+            placeholder="¿Cómo querés que te llamemos?"
+            {...register("full_name")}
+          />
+        </Field>
+      ) : null}
       <Field label="Email" htmlFor="email" error={errors.email?.message}>
         <Input
           id="email"

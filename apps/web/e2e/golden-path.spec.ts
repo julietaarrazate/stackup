@@ -56,7 +56,7 @@ test("register, build a full cost, see it on the dashboard", async ({ page }) =>
   // Create a cost tying application + vendor/service together
   await page.goto(`${workspaceUrl}/costs`);
   await page.getByLabel("Aplicación").selectOption({ label: "Oído App" });
-  await page.getByLabel("Vendor").selectOption({ label: "Vercel" });
+  await page.getByLabel("Proveedor").selectOption({ label: "Vercel" });
   await page.getByLabel("Servicio").selectOption({ label: "Pro" });
   await page.getByLabel("Nombre del costo").fill("Vercel Pro");
   await page.getByLabel("Monto").fill("20.00");

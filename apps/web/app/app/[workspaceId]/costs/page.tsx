@@ -2,18 +2,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { listApplications, listCosts, listExpenses, listVendors } from "@/lib/session";
 import { CreateCost } from "@/components/create-cost";
+import { CostsList } from "@/components/costs-list";
 import { RecordExpense } from "@/components/record-expense";
 import { formatMoney } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Costos" };
-
-const FREQUENCY_LABEL: Record<string, string> = {
-  weekly: "semanal",
-  monthly: "mensual",
-  quarterly: "trimestral",
-  yearly: "anual",
-  custom: "custom",
-};
 
 export default async function CostsPage({
   params,
@@ -64,87 +57,7 @@ export default async function CostsPage({
           </p>
         </div>
       ) : (
-        <>
-          {/* Mobile: card list */}
-          <ul className="flex flex-col gap-2 lg:hidden">
-            {costs.map((c) => (
-              <li
-                key={c.id}
-                className="tabular flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
-              >
-                <div>
-                  <p className="font-medium">{c.name}</p>
-                  <p className="text-xs text-[var(--muted-foreground)]">
-                    {appName.get(c.application_id) ?? "—"} ·{" "}
-                    {formatMoney(c.amount, c.currency)} ·{" "}
-                    {FREQUENCY_LABEL[c.frequency] ?? c.frequency}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">
-                    {formatMoney(c.monthly_equivalent, c.currency)}/mes
-                  </p>
-                  <p className="text-xs text-[var(--muted-foreground)]">
-                    {formatMoney(c.annualized_cost, c.currency)} anual
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          {/* Desktop: table */}
-          <div className="hidden overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] lg:block">
-            <table className="tabular w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-[var(--border)] text-xs text-[var(--muted-foreground)]">
-                  <th className="px-4 py-3 font-medium">Costo</th>
-                  <th className="px-4 py-3 font-medium">Aplicación</th>
-                  <th className="px-4 py-3 font-medium">Categoría</th>
-                  <th className="px-4 py-3 font-medium">Frecuencia</th>
-                  <th className="px-4 py-3 text-right font-medium">Monto</th>
-                  <th className="px-4 py-3 text-right font-medium">Mensual</th>
-                  <th className="px-4 py-3 text-right font-medium">Anual</th>
-                </tr>
-              </thead>
-              <tbody>
-                {costs.map((c) => (
-                  <tr key={c.id} className="border-b border-[var(--border)] last:border-0">
-                    <td className="px-4 py-3">
-                      <p className="font-medium">{c.name}</p>
-                      {c.certainty !== "confirmed" || c.status !== "active" ? (
-                        <p className="text-xs text-[var(--muted-foreground)]">
-                          {c.certainty !== "confirmed" ? c.certainty : ""}
-                          {c.certainty !== "confirmed" && c.status !== "active"
-                            ? " · "
-                            : ""}
-                          {c.status !== "active" ? c.status : ""}
-                        </p>
-                      ) : null}
-                    </td>
-                    <td className="px-4 py-3 text-[var(--muted-foreground)]">
-                      {appName.get(c.application_id) ?? "—"}
-                    </td>
-                    <td className="px-4 py-3 text-[var(--muted-foreground)]">
-                      {c.category ?? "—"}
-                    </td>
-                    <td className="px-4 py-3 text-[var(--muted-foreground)]">
-                      {FREQUENCY_LABEL[c.frequency] ?? c.frequency}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {formatMoney(c.amount, c.currency)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-semibold">
-                      {formatMoney(c.monthly_equivalent, c.currency)}
-                    </td>
-                    <td className="px-4 py-3 text-right text-[var(--muted-foreground)]">
-                      {formatMoney(c.annualized_cost, c.currency)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
+        <CostsList workspaceId={workspaceId} costs={costs} appName={appName} />
       )}
 
       {costs.length > 0 ? (
