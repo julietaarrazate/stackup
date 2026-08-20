@@ -231,7 +231,12 @@ function ServiceList({
             onChange={(e) => setName(e.target.value)}
             className="text-sm"
           />
-          <Button type="submit" variant="ghost" disabled={!name.trim()}>
+          <Button
+            type="submit"
+            variant="ghost"
+            aria-label="Agregar servicio"
+            disabled={!name.trim()}
+          >
             <Plus className="h-4 w-4" />
           </Button>
         </form>
