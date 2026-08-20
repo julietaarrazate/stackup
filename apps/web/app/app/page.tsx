@@ -6,6 +6,7 @@ import { getCurrentUser, listWorkspaces } from "@/lib/session";
 import { BrandWordmark } from "@/components/brand";
 import { LogoutButton } from "@/components/logout-button";
 import { CreateWorkspace } from "@/components/create-workspace";
+import { EditDisplayName } from "@/components/edit-display-name";
 
 export const metadata: Metadata = { title: "Inicio" };
 
@@ -23,11 +24,7 @@ export default async function AppHome() {
       </header>
 
       <section className="py-6">
-        <p className="text-sm text-[var(--muted-foreground)]">Sesión iniciada como</p>
-        <p className="font-medium">{user.full_name || user.email}</p>
-        {user.full_name ? (
-          <p className="text-xs text-[var(--muted-foreground)]">{user.email}</p>
-        ) : null}
+        <EditDisplayName fullName={user.full_name} email={user.email} />
       </section>
 
       <section className="flex flex-col gap-4 py-4">
