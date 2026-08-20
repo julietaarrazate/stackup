@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CategoryDonut, EvolutionArea, CATEGORY_COLORS } from "./dashboard-charts";
+import { EntityIcon } from "./entity-icon";
 import { formatMoney } from "@/lib/format";
 import type { Application, EvolutionReport, OverviewReport } from "@/lib/session";
 
@@ -225,10 +226,15 @@ function ReportGroup({
           {rows.map((r) => (
             <li
               key={r.label}
-              className="tabular flex items-center justify-between text-sm"
+              className="tabular flex items-center justify-between gap-2 text-sm"
             >
-              <span className="text-[var(--muted-foreground)]">{r.label}</span>
-              <span className="font-medium">
+              <span className="flex min-w-0 items-center gap-2.5">
+                <EntityIcon name={r.label} size="sm" />
+                <span className="truncate text-[var(--muted-foreground)]">
+                  {r.label}
+                </span>
+              </span>
+              <span className="shrink-0 font-medium">
                 {formatMoney(r.monthly, currency)}/mes
               </span>
             </li>

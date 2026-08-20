@@ -1,7 +1,13 @@
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import type { EvolutionReport, OverviewReport } from "@/lib/session";
 import { formatMoney } from "@/lib/format";
-import { CategoryDonut, EvolutionArea, CATEGORY_COLORS } from "./dashboard-charts";
+import {
+  CategoryDonut,
+  EvolutionArea,
+  Sparkline,
+  CATEGORY_COLORS,
+} from "./dashboard-charts";
+import { EntityIcon } from "./entity-icon";
 
 function primaryCurrency(overview: OverviewReport, base: string): string | null {
   if (overview.total.length === 0) return null;
@@ -12,12 +18,6 @@ function primaryCurrency(overview: OverviewReport, base: string): string | null 
   );
   return sorted[0]?.currency ?? null;
 }
-
-const CERTAINTY_LABEL: Record<string, string> = {
-  confirmed: "Confirmado",
-  estimated: "Estimado",
-  projected: "Proyectado",
-};
 
 export function Dashboard({
   overview,
@@ -48,12 +48,22 @@ export function Dashboard({
   }
 
   const certainty = overview.by_certainty.filter((c) => c.currency === cur);
+  const confirmed = certainty.find((c) => c.certainty === "confirmed");
+  const estimated = certainty.find((c) => c.certainty === "estimated");
+  const totalMonthly = Number(total.monthly) || 0;
+  const confirmedPct = totalMonthly
+    ? (Number(confirmed?.monthly ?? 0) / totalMonthly) * 100
+    : 0;
+  const estimatedPct = totalMonthly
+    ? (Number(estimated?.monthly ?? 0) / totalMonthly) * 100
+    : 0;
   const otherCurrencies = overview.total.filter((t) => t.currency !== cur);
+  const sparkValues = evoSeries.map((p) => p.value);
 
   return (
     <div className="flex flex-col gap-4">
       {/* KPI row */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5">
           <p className="text-xs text-[var(--muted-foreground)]">
             Costo mensual total ({cur})
@@ -75,6 +85,7 @@ export function Dashboard({
               {Math.abs(change).toFixed(1)}% vs mes anterior
             </p>
           ) : null}
+          <Sparkline data={sparkValues} color="#8b5cf6" />
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5">
           <p className="text-xs text-[var(--muted-foreground)]">Anualizado</p>
@@ -84,30 +95,25 @@ export function Dashboard({
           <p className="mt-2 text-xs text-[var(--muted-foreground)]">
             {overview.cost_item_count} costos registrados
           </p>
+          <Sparkline data={sparkValues.map((v) => v * 12)} color="#22b8cf" />
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5">
-          <p className="text-xs text-[var(--muted-foreground)]">
-            Confirmado vs estimado
+          <p className="text-xs text-[var(--muted-foreground)]">Confirmado</p>
+          <p className="tabular mt-1 text-3xl font-semibold tracking-tight">
+            {formatMoney(confirmed?.monthly ?? "0", cur)}
           </p>
-          <div className="mt-2 flex flex-col gap-1">
-            {certainty.length === 0 ? (
-              <span className="text-sm text-[var(--muted-foreground)]">—</span>
-            ) : (
-              certainty.map((c) => (
-                <div
-                  key={c.certainty}
-                  className="tabular flex items-center justify-between text-sm"
-                >
-                  <span className="text-[var(--muted-foreground)]">
-                    {CERTAINTY_LABEL[c.certainty] ?? c.certainty}
-                  </span>
-                  <span className="font-medium">
-                    {formatMoney(c.monthly, cur)}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
+          <p className="tabular mt-2 text-xs text-[var(--positive)]">
+            {confirmedPct.toFixed(1)}% del total
+          </p>
+        </div>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5">
+          <p className="text-xs text-[var(--muted-foreground)]">Estimado</p>
+          <p className="tabular mt-1 text-3xl font-semibold tracking-tight">
+            {formatMoney(estimated?.monthly ?? "0", cur)}
+          </p>
+          <p className="tabular mt-2 text-xs text-[var(--muted-foreground)]">
+            {estimatedPct.toFixed(1)}% del total
+          </p>
         </div>
       </div>
 
@@ -190,11 +196,14 @@ export function Dashboard({
                 key={`${c.cost_id}-${c.effective_from}-${c.amount}`}
                 className="tabular flex items-center justify-between text-sm"
               >
-                <div>
-                  <span className="font-medium">{c.cost_name}</span>
-                  <span className="ml-2 text-xs text-[var(--muted-foreground)]">
-                    {c.reason ?? "actualización"} · {c.effective_from}
-                  </span>
+                <div className="flex items-center gap-2.5">
+                  <EntityIcon name={c.cost_name} size="sm" />
+                  <div>
+                    <span className="font-medium">{c.cost_name}</span>
+                    <span className="ml-2 text-xs text-[var(--muted-foreground)]">
+                      {c.reason ?? "actualización"} · {c.effective_from}
+                    </span>
+                  </div>
                 </div>
                 <span>{formatMoney(c.amount, c.currency)}</span>
               </li>
@@ -225,10 +234,15 @@ function GroupList({
           {rows.map((r) => (
             <li
               key={r.label}
-              className="tabular flex items-center justify-between text-sm"
+              className="tabular flex items-center justify-between gap-2 text-sm"
             >
-              <span className="text-[var(--muted-foreground)]">{r.label}</span>
-              <span className="font-medium">
+              <span className="flex min-w-0 items-center gap-2.5">
+                <EntityIcon name={r.label} size="sm" />
+                <span className="truncate text-[var(--muted-foreground)]">
+                  {r.label}
+                </span>
+              </span>
+              <span className="shrink-0 font-medium">
                 {formatMoney(r.monthly, currency)}/mes
               </span>
             </li>

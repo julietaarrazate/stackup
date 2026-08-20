@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { ChevronRight } from "lucide-react";
 import { getOverview, listApplications } from "@/lib/session";
 import { CreateApplication } from "@/components/create-application";
+import { EntityIcon } from "@/components/entity-icon";
 import { formatMoney } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Aplicaciones" };
@@ -50,12 +51,15 @@ export default async function ApplicationsPage({
                   href={`/app/${workspaceId}/applications/${app.id}`}
                   className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3.5 transition-colors hover:bg-[var(--surface-2)]"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">{app.name}</p>
-                    <p className="text-xs text-[var(--muted-foreground)]">
-                      /{app.slug}
-                      {app.status !== "active" ? " · archivada" : ""}
-                    </p>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <EntityIcon name={app.name} />
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{app.name}</p>
+                      <p className="text-xs text-[var(--muted-foreground)]">
+                        /{app.slug}
+                        {app.status !== "active" ? " · archivada" : ""}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
                     {cost ? (
