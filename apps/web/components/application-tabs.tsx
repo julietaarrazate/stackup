@@ -4,7 +4,7 @@ import { useState } from "react";
 import { CategoryDonut, CATEGORY_COLORS } from "./dashboard-charts";
 import { CreateCost } from "./create-cost";
 import { CreateEnvironment } from "./create-environment";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatDate } from "@/lib/format";
 import type {
   Application,
   CertaintyTotal,
@@ -301,7 +301,7 @@ export function ApplicationTabs({
                   <div>
                     <span className="font-medium">{c.cost_name}</span>
                     <span className="ml-2 text-xs text-[var(--muted-foreground)]">
-                      {c.reason ?? "actualización"} · {c.effective_from}
+                      {c.reason ?? "actualización"} · {formatDate(c.effective_from)}
                     </span>
                   </div>
                   <span className="font-medium">

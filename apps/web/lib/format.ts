@@ -15,3 +15,13 @@ export function formatMoney(amount: string, currency: string): string {
     return `${amount} ${currency}`;
   }
 }
+
+/**
+ * Display-only date formatting (day/month/year, matching es-AR reading
+ * order) for the ISO "YYYY-MM-DD" strings the backend returns.
+ */
+export function formatDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split("-");
+  if (!year || !month || !day) return isoDate;
+  return `${day}/${month}/${year}`;
+}

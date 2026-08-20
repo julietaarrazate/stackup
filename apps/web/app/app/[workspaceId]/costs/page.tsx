@@ -4,7 +4,7 @@ import { listApplications, listCosts, listExpenses, listVendors } from "@/lib/se
 import { CreateCost } from "@/components/create-cost";
 import { CostsList } from "@/components/costs-list";
 import { RecordExpense } from "@/components/record-expense";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Costos" };
 
@@ -83,7 +83,7 @@ export default async function CostsPage({
                       {costName.get(e.cost_item_id) ?? "Costo"}
                     </p>
                     <p className="text-xs text-[var(--muted-foreground)]">
-                      {e.paid_at ?? "sin fecha"}
+                      {e.paid_at ? formatDate(e.paid_at) : "sin fecha"}
                       {e.invoice_number ? ` · ${e.invoice_number}` : ""}
                       {e.evidence_id ? " · 📎 comprobante" : ""}
                     </p>
