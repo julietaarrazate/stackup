@@ -1,6 +1,6 @@
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import type { EvolutionReport, OverviewReport } from "@/lib/session";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatDate } from "@/lib/format";
 import {
   CategoryDonut,
   EvolutionArea,
@@ -59,6 +59,10 @@ export function Dashboard({
     : 0;
   const otherCurrencies = overview.total.filter((t) => t.currency !== cur);
   const sparkValues = evoSeries.map((p) => p.value);
+  // Every currency in play, primary first — category/app/vendor breakdowns
+  // are rendered per currency so mixed-currency workspaces (e.g. costs in
+  // both USD and ARS) don't lose the non-primary ones from the charts.
+  const allCurrencies = [cur, ...otherCurrencies.map((t) => t.currency)];
 
   return (
     <div className="flex flex-col gap-4">
@@ -144,48 +148,74 @@ export function Dashboard({
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5">
           <p className="mb-2 text-sm font-medium">Costo por categoría</p>
-          {categories.length > 0 ? (
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <CategoryDonut data={categories} currency={cur} />
-              </div>
-              <ul className="flex flex-col gap-1.5 text-xs">
-                {categories.map((c, i) => (
-                  <li key={c.label} className="flex items-center gap-2">
-                    <span
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{
-                        background: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
-                      }}
-                    />
-                    <span className="text-[var(--muted-foreground)]">
-                      {c.label}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <p className="py-16 text-center text-sm text-[var(--muted-foreground)]">
-              Sin categorías cargadas.
-            </p>
-          )}
+          <div className="flex flex-col gap-4">
+            {allCurrencies.map((currency) => {
+              const currencyCategories = overview.by_category
+                .filter((g) => g.currency === currency)
+                .map((g) => ({ label: g.label, value: Number(g.monthly) }));
+              if (currencyCategories.length === 0) return null;
+              return (
+                <div key={currency}>
+                  {allCurrencies.length > 1 ? (
+                    <p className="mb-1.5 text-xs font-medium text-[var(--muted-foreground)]">
+                      {currency}
+                    </p>
+                  ) : null}
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <CategoryDonut data={currencyCategories} currency={currency} />
+                    </div>
+                    <ul className="flex flex-col gap-1.5 text-xs">
+                      {currencyCategories.map((c, i) => (
+                        <li key={c.label} className="flex items-center gap-2">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{
+                              background: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+                            }}
+                          />
+                          <span className="text-[var(--muted-foreground)]">
+                            {c.label}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })}
+            {categories.length === 0 ? (
+              <p className="py-16 text-center text-sm text-[var(--muted-foreground)]">
+                Sin categorías cargadas.
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
 
       {/* By application / vendor + recent changes */}
-      <div className="grid gap-3 lg:grid-cols-2">
-        <GroupList
-          title="Por aplicación"
-          rows={overview.by_application.filter((g) => g.currency === cur)}
-          currency={cur}
-        />
-        <GroupList
-          title="Por proveedor"
-          rows={overview.by_vendor.filter((g) => g.currency === cur)}
-          currency={cur}
-        />
-      </div>
+      {allCurrencies.map((currency) => (
+        <div key={currency} className="grid gap-3 lg:grid-cols-2">
+          <GroupList
+            title={
+              allCurrencies.length > 1
+                ? `Por aplicación (${currency})`
+                : "Por aplicación"
+            }
+            rows={overview.by_application.filter((g) => g.currency === currency)}
+            currency={currency}
+          />
+          <GroupList
+            title={
+              allCurrencies.length > 1
+                ? `Por proveedor (${currency})`
+                : "Por proveedor"
+            }
+            rows={overview.by_vendor.filter((g) => g.currency === currency)}
+            currency={currency}
+          />
+        </div>
+      ))}
 
       {overview.recent_changes.length > 0 ? (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5">
@@ -201,7 +231,7 @@ export function Dashboard({
                   <div>
                     <span className="font-medium">{c.cost_name}</span>
                     <span className="ml-2 text-xs text-[var(--muted-foreground)]">
-                      {c.reason ?? "actualización"} · {c.effective_from}
+                      {c.reason ?? "actualización"} · {formatDate(c.effective_from)}
                     </span>
                   </div>
                 </div>
