@@ -27,6 +27,7 @@ class MemberRead(BaseModel):
     id: uuid.UUID
     workspace_id: uuid.UUID
     user_id: uuid.UUID
+    email: str
     role: WorkspaceRole
     created_at: datetime.datetime
     updated_at: datetime.datetime

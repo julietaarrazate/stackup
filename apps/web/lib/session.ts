@@ -74,6 +74,73 @@ export async function listApplications(
   return (await res.json()) as Application[];
 }
 
+export async function getApplication(
+  workspaceId: string,
+  applicationId: string,
+): Promise<Application | null> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/applications/${applicationId}`,
+  );
+  if (!res.ok) return null;
+  return (await res.json()) as Application;
+}
+
+export type Environment = {
+  id: string;
+  application_id: string;
+  name: string;
+  type: "production" | "staging" | "development" | "preview" | "other";
+  url: string | null;
+};
+
+export async function listEnvironments(
+  workspaceId: string,
+  applicationId: string,
+): Promise<Environment[]> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/applications/${applicationId}/environments`,
+  );
+  if (!res.ok) return [];
+  return (await res.json()) as Environment[];
+}
+
+export type CostHistoryEntry = {
+  id: string;
+  cost_item_id: string;
+  amount: string;
+  currency: string;
+  effective_from: string;
+  effective_to: string | null;
+  reason: string | null;
+};
+
+export async function getCostHistory(
+  workspaceId: string,
+  costId: string,
+): Promise<CostHistoryEntry[]> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/costs/${costId}/history`,
+  );
+  if (!res.ok) return [];
+  return (await res.json()) as CostHistoryEntry[];
+}
+
+export type Member = {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  email: string;
+  role: "owner" | "admin" | "member" | "viewer";
+};
+
+export async function listMembers(workspaceId: string): Promise<Member[]> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/members`,
+  );
+  if (!res.ok) return [];
+  return (await res.json()) as Member[];
+}
+
 export async function listCosts(workspaceId: string): Promise<Cost[]> {
   const res = await apiFetchWithSession(
     `/api/v1/workspaces/${workspaceId}/costs`,
@@ -143,11 +210,23 @@ export async function listVendors(workspaceId: string): Promise<Vendor[]> {
   return (await res.json()) as Vendor[];
 }
 
+export type OverviewFilters = {
+  applicationId?: string;
+  category?: string;
+  currency?: string;
+};
+
 export async function getOverview(
   workspaceId: string,
+  filters?: OverviewFilters,
 ): Promise<OverviewReport | null> {
+  const qs = new URLSearchParams();
+  if (filters?.applicationId) qs.set("application_id", filters.applicationId);
+  if (filters?.category) qs.set("category", filters.category);
+  if (filters?.currency) qs.set("currency", filters.currency);
+  const suffix = qs.toString() ? `?${qs.toString()}` : "";
   const res = await apiFetchWithSession(
-    `/api/v1/workspaces/${workspaceId}/reports/overview`,
+    `/api/v1/workspaces/${workspaceId}/reports/overview${suffix}`,
   );
   if (!res.ok) return null;
   return (await res.json()) as OverviewReport;
@@ -155,9 +234,10 @@ export async function getOverview(
 
 export async function getEvolution(
   workspaceId: string,
+  months = 6,
 ): Promise<EvolutionReport> {
   const res = await apiFetchWithSession(
-    `/api/v1/workspaces/${workspaceId}/reports/evolution?months=6`,
+    `/api/v1/workspaces/${workspaceId}/reports/evolution?months=${months}`,
   );
   if (!res.ok) return { points: [] };
   return (await res.json()) as EvolutionReport;

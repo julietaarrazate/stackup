@@ -61,7 +61,7 @@ export default async function AppHome() {
       </section>
 
       <footer className="mt-auto border-t border-[var(--border)] py-6 text-sm text-[var(--muted-foreground)]">
-        Aplicaciones, costos y reportes llegan en las próximas fases.
+        Entrá a un workspace para ver aplicaciones, costos y reportes.
       </footer>
     </main>
   );
