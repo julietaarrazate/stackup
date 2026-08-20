@@ -47,6 +47,20 @@ class Settings(BaseSettings):
     # across app/api subdomains. None -> host-only cookie (local dev).
     cookie_domain: str | None = None
 
+    # Public base URL of the frontend, used to build links in emails
+    # (password reset, verification). Defaults to the CORS origin.
+    frontend_base_url: str | None = None
+
+    # --- Email (Resend) ---
+    # When RESEND_API_KEY is set, transactional emails are sent via Resend;
+    # otherwise they are logged (dev/test).
+    resend_api_key: str | None = None
+    email_from: str = "STACKUP <onboarding@resend.dev>"
+
+    # --- Background jobs (Phase 7, ADR-005) ---
+    # Upstash Redis URL for the arq queue. When unset, jobs run inline.
+    redis_url: str | None = None
+
     # --- Observability ---
     sentry_dsn: str | None = None
     sentry_traces_sample_rate: float = Field(default=0.1, ge=0.0, le=1.0)
@@ -102,6 +116,10 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         return [self.frontend_origin]
+
+    @property
+    def frontend_link_base(self) -> str:
+        return (self.frontend_base_url or self.frontend_origin).rstrip("/")
 
 
 @lru_cache
