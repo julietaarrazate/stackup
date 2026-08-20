@@ -59,14 +59,20 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     async def on_after_forgot_password(
         self, user: User, token: str, request: object | None = None
     ) -> None:
-        # Email delivery (Resend) is a later phase; for now the reset token is
-        # logged so the flow is testable without an email provider.
+        from stackup_api.services.email import password_reset_email, send_email
+
         logger.info("auth.forgot_password", user_id=str(user.id))
+        subject, html = password_reset_email(token)
+        await send_email(to=user.email, subject=subject, html=html)
 
     async def on_after_request_verify(
         self, user: User, token: str, request: object | None = None
     ) -> None:
+        from stackup_api.services.email import send_email, verify_email
+
         logger.info("auth.request_verify", user_id=str(user.id))
+        subject, html = verify_email(token)
+        await send_email(to=user.email, subject=subject, html=html)
 
 
 async def get_user_manager(

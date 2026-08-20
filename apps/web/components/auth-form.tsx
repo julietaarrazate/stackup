@@ -5,8 +5,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input, Field } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 const schema = z.object({
   email: z.string().email("Ingresá un email válido."),
@@ -64,13 +66,20 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         />
       </Field>
       <Field label="Contraseña" htmlFor="password" error={errors.password?.message}>
-        <Input
+        <PasswordInput
           id="password"
-          type="password"
           autoComplete={mode === "login" ? "current-password" : "new-password"}
           placeholder="••••••••"
           {...register("password")}
         />
+        {mode === "login" ? (
+          <Link
+            href="/forgot-password"
+            className="mt-1 self-end text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        ) : null}
       </Field>
       {serverError ? (
         <p className="text-sm text-[var(--negative)]" role="alert">

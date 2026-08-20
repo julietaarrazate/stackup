@@ -59,6 +59,26 @@ async def test_wrong_password_rejected(client: AsyncClient) -> None:
     assert resp.status_code == 400
 
 
+async def test_forgot_password_accepts_without_leaking(client: AsyncClient) -> None:
+    await client.post(
+        "/api/v1/auth/register",
+        json={"email": "fp@example.com", "password": "Sup3rSecret!"},
+    )
+    # Known and unknown emails both return the same accepted status (no
+    # user enumeration). Email delivery is a no-op without a provider.
+    for email in ("fp@example.com", "nobody@example.com"):
+        resp = await client.post("/api/v1/auth/forgot-password", json={"email": email})
+        assert resp.status_code in (200, 202), resp.text
+
+
+async def test_reset_password_rejects_bad_token(client: AsyncClient) -> None:
+    resp = await client.post(
+        "/api/v1/auth/reset-password",
+        json={"token": "invalid", "password": "N3wSecret!"},
+    )
+    assert resp.status_code == 400
+
+
 async def test_register_rate_limited(client: AsyncClient) -> None:
     # register limiter is 5 per hour; the 6th should be blocked
     last_status = None
