@@ -61,6 +61,21 @@ class Settings(BaseSettings):
     # Upstash Redis URL for the arq queue. When unset, jobs run inline.
     redis_url: str | None = None
 
+    # --- GitHub integration (Phase 8) ---
+    # An OAuth App (not a GitHub App) with the "repo" scope for read access
+    # to manifest files. When unset, the /integrations/github routes are
+    # disabled (404) rather than erroring on every call.
+    github_client_id: str | None = None
+    github_client_secret: str | None = None
+
+    @property
+    def github_configured(self) -> bool:
+        return bool(self.github_client_id and self.github_client_secret)
+
+    @property
+    def github_redirect_uri(self) -> str:
+        return f"{self.frontend_link_base}/api/auth/github/callback"
+
     # --- Observability ---
     sentry_dsn: str | None = None
     sentry_traces_sample_rate: float = Field(default=0.1, ge=0.0, le=1.0)

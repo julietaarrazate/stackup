@@ -15,8 +15,11 @@ from stackup_api import __version__
 from stackup_api.api.health import router as health_router
 from stackup_api.api.v1.applications import router as applications_router
 from stackup_api.api.v1.costs import router as costs_router
+from stackup_api.api.v1.detections import router as detections_router
 from stackup_api.api.v1.evidence import router as evidence_router
 from stackup_api.api.v1.expenses import router as expenses_router
+from stackup_api.api.v1.integrations import callback_router as github_callback_router
+from stackup_api.api.v1.integrations import router as integrations_router
 from stackup_api.api.v1.reports import router as reports_router
 from stackup_api.api.v1.router import api_router
 from stackup_api.api.v1.vendors import router as vendors_router
@@ -121,6 +124,9 @@ def create_app() -> FastAPI:
     app.include_router(reports_router, prefix="/api/v1")
     app.include_router(evidence_router, prefix="/api/v1")
     app.include_router(expenses_router, prefix="/api/v1")
+    app.include_router(integrations_router, prefix="/api/v1")
+    app.include_router(github_callback_router, prefix="/api/v1")
+    app.include_router(detections_router, prefix="/api/v1")
 
     return app
 

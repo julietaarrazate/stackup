@@ -45,6 +45,12 @@ services:
         sync: false
       - key: STORAGE_SECRET_KEY
         sync: false
+      # GitHub integration (Phase 8) — an OAuth App, optional. Without it,
+      # /integrations/github routes 404 rather than erroring.
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
       - key: PYTHON_VERSION
         value: "3.11"
 
