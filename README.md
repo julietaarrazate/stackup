@@ -10,24 +10,38 @@ category.
 
 ## Status
 
-Phase 6 of 9 complete (Phases 0–5 merged to `main`). See
-`docs/product/roadmap.md` for the full phased plan. Background jobs
-(Phase 7) come next.
+All 9 roadmap phases are complete and merged to `main`, plus a round of
+post-launch polish. Production is live on real infrastructure — Vercel
+(frontend), Render (API + planned worker), Neon (Postgres), Cloudflare R2
+(evidence storage), Resend (email), Redis Cloud (job queue, worker not
+yet deployed), and a GitHub OAuth App (repo integration) are all
+configured with real credentials. See `docs/product/roadmap.md` for the
+phased plan, `docs/operations/production-readiness.md` for the current
+done/pending checklist, and `docs/product/session-log.md` for a running
+log of what changed each work session — read that log first when picking
+this project back up, to avoid re-deriving context or asserting stale
+status.
 
 Working today: register, login, logout (revocable server-side sessions),
-role-based access control, workspace-scoped CRUD for applications,
-environments, vendors and services (shared global vendor catalog),
-**cost tracking** with a pure Decimal Cost Engine (monthly-equivalent,
-annualized, append-only price history), a **dashboard** (total stack cost,
-change vs previous period, cost by category / application / vendor,
-confirmed vs estimated, a monthly evolution chart, recent changes — all
-aggregated in the backend), and **expenses & evidence** — record real
+an editable display name, role-based access control, workspace-scoped
+CRUD for applications, environments, vendors and services (shared global
+vendor catalog plus workspace-private ones), **cost tracking** with a
+pure Decimal Cost Engine (monthly-equivalent, annualized, append-only
+price history, full mixed-currency support — a workspace can hold costs
+in USD and ARS side by side, never summed together), inline edit/delete
+for both costs and applications, a **dashboard** (total stack cost per
+currency, change vs previous period, cost by category / application /
+vendor broken out per currency in use, confirmed vs estimated, a monthly
+evolution chart, recent changes with es-AR day/month/year dates — all
+aggregated in the backend), **expenses & evidence** — record real
 payments against a cost and attach validated invoice/receipt files stored
-privately (Cloudflare R2 in production; downloads stream through an
-authorized endpoint, never a public URL). Everything runs through a
-Next.js BFF in front of FastAPI, is CI-gated, and is verified end-to-end.
-A dev/test seed provides the vendor catalog plus Oído/Cuadra/Stackup
-examples.
+privately in Cloudflare R2 (downloads stream through an authorized
+endpoint, never a public URL), and a **GitHub integration** (OAuth
+connect, repo scan, heuristic vendor/service detections that require
+manual confirmation before becoming a cost). Everything runs through a
+Next.js BFF in front of FastAPI, is CI-gated (lint, typecheck, mypy
+strict, pytest, Playwright E2E, `alembic check`), and is verified
+end-to-end.
 
 ## Repository layout
 
@@ -56,14 +70,9 @@ secrets are committed).
 - `docs/decisions/` — Architecture Decision Records (ADRs)
 - `docs/product/domain-model.md` — domain entities and invariants
 - `docs/product/roadmap.md` — phased implementation plan
+- `docs/product/session-log.md` — running log of what shipped each work
+  session, and what's still open — read this first
+- `docs/operations/production-readiness.md` — current done/pending
+  checklist against a production launch
 - `docs/operations/FREE_TIER.md` — free-tier limits and upgrade paths for
   every infrastructure provider in use
-
-## Planned structure
-
-```
-apps/web/   Next.js frontend (Vercel)
-apps/api/   FastAPI backend + background worker (Render)
-```
-
-Not yet scaffolded — see ADR-001 and Phase 1 of the roadmap.

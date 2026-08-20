@@ -9,11 +9,11 @@
 # Secrets (DATABASE_URL, SENTRY_DSN, etc.) are set in the Render dashboard,
 # never committed — every secret below is `sync: false`.
 #
-# ENVIRONMENT is `staging` until object storage (R2) is configured: the app
-# refuses to start in `production` without R2 (ADR-006). staging still forbids
-# SQLite and the dev AUTH_SECRET and uses Secure cookies. Switch to
-# `production` once STORAGE_* is set. Evidence uploads use an in-process store
-# until then (lost on restart) — everything else is fully durable in Neon.
+# ENVIRONMENT is `production` on stackup-api as of the R2/Resend/GitHub
+# OAuth credential rollout (see docs/product/session-log.md) — R2 is
+# configured for real, so the app boots in production mode (ADR-006: it
+# refuses to start in `production` without R2). If STORAGE_* is ever
+# unset again this must drop back to `staging` or the app won't boot.
 
 services:
   - type: web
@@ -27,7 +27,7 @@ services:
     healthCheckPath: /health
     envVars:
       - key: ENVIRONMENT
-        value: staging
+        value: production
       - key: DATABASE_URL
         sync: false # Neon connection string (postgresql+asyncpg://...)
       - key: AUTH_SECRET
@@ -36,7 +36,7 @@ services:
         sync: false # the Vercel frontend URL, e.g. https://stackup-web.vercel.app
       - key: SENTRY_DSN
         sync: false
-      # Object storage (R2) — set these, then flip ENVIRONMENT to production.
+      # Object storage (R2) — configured for real.
       - key: STORAGE_ENDPOINT
         sync: false
       - key: STORAGE_BUCKET
@@ -45,8 +45,8 @@ services:
         sync: false
       - key: STORAGE_SECRET_KEY
         sync: false
-      # GitHub integration (Phase 8) — an OAuth App, optional. Without it,
-      # /integrations/github routes 404 rather than erroring.
+      # GitHub integration (Phase 8) — an OAuth App, configured for real.
+      # Without it, /integrations/github routes would 404 rather than error.
       - key: GITHUB_CLIENT_ID
         sync: false
       - key: GITHUB_CLIENT_SECRET
@@ -54,11 +54,18 @@ services:
       - key: PYTHON_VERSION
         value: "3.11"
 
-  # arq background worker (Phase 7, ADR-005). Shares the apps/api codebase
-  # and DATABASE_URL with the web service; needs its own REDIS_URL (Upstash —
-  # same instance the web service would use once it enqueues jobs from a
-  # request). Runs the daily auto_end_expired_costs cron job today; more
-  # jobs register in stackup_api/worker/tasks.py without a second service.
+  # arq background worker (Phase 7, ADR-005). NOT CURRENTLY DEPLOYED — see
+  # docs/product/session-log.md and production-readiness.md. Render's free
+  # tier doesn't cover Background Workers (only Web Services), and paying
+  # for one was declined for now since the only job today
+  # (auto_end_expired_costs, daily) is a convenience, not a correctness
+  # requirement — costs can be marked "ended" manually in the UI. `plan:
+  # free` below is what the blueprint would request; verify against
+  # Render's current pricing before actually creating this service, it
+  # may require a paid plan. Shares the apps/api codebase and DATABASE_URL
+  # with the web service; needs its own REDIS_URL. A REDIS_URL already
+  # exists (Redis Cloud free tier) but currently sits unused on
+  # stackup-api instead, since this service was never created.
   - type: worker
     name: stackup-worker
     runtime: python
@@ -69,11 +76,11 @@ services:
     startCommand: uv run arq stackup_api.worker.settings.WorkerSettings
     envVars:
       - key: ENVIRONMENT
-        value: staging
+        value: production
       - key: DATABASE_URL
         sync: false # same Neon connection string as stackup-api
       - key: REDIS_URL
-        sync: false # Upstash Redis, rediss:// (TLS)
+        sync: false # Redis Cloud (or Upstash) — redis:// or rediss://
       - key: SENTRY_DSN
         sync: false
       - key: PYTHON_VERSION
