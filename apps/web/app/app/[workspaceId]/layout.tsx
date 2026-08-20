@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getCurrentUser, getWorkspace } from "@/lib/session";
+import { getCurrentUser, getWorkspace, listWorkspaces } from "@/lib/session";
 import { WorkspaceShell } from "@/components/workspace-shell";
 
 export default async function WorkspaceLayout({
@@ -13,11 +13,14 @@ export default async function WorkspaceLayout({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const workspace = await getWorkspace(workspaceId);
+  const [workspace, workspaces] = await Promise.all([
+    getWorkspace(workspaceId),
+    listWorkspaces(),
+  ]);
   if (!workspace) notFound();
 
   return (
-    <WorkspaceShell workspace={workspace} userEmail={user.email}>
+    <WorkspaceShell workspace={workspace} workspaces={workspaces} userEmail={user.email}>
       {children}
     </WorkspaceShell>
   );

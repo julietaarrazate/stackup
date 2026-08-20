@@ -11,6 +11,7 @@ import {
   listVendors,
 } from "@/lib/session";
 import { ApplicationTabs } from "@/components/application-tabs";
+import { EntityIcon } from "@/components/entity-icon";
 
 export async function generateMetadata({
   params,
@@ -54,7 +55,8 @@ export default async function ApplicationDetailPage({
       </Link>
 
       <div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <EntityIcon name={application.name} />
           <h1 className="text-2xl font-semibold tracking-tight">
             {application.name}
           </h1>

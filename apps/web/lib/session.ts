@@ -152,8 +152,29 @@ export async function listCosts(workspaceId: string): Promise<Cost[]> {
 export type Vendor = {
   id: string;
   name: string;
+  website: string | null;
+  category: string | null;
   is_global: boolean;
 };
+
+export type Service = {
+  id: string;
+  vendor_id: string;
+  name: string;
+  category: string | null;
+  website: string | null;
+};
+
+export async function listServices(
+  workspaceId: string,
+  vendorId: string,
+): Promise<Service[]> {
+  const res = await apiFetchWithSession(
+    `/api/v1/workspaces/${workspaceId}/vendors/${vendorId}/services`,
+  );
+  if (!res.ok) return [];
+  return (await res.json()) as Service[];
+}
 
 export type CurrencyTotal = {
   currency: string;
