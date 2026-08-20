@@ -1,7 +1,9 @@
 # Production Readiness Checklist
 
-Snapshot as of Phase 9 (hardening). Re-check before announcing STACKUP as
-generally available — this list is a decision record, not a one-time gate.
+Snapshot as of Phase 9 (hardening) + post-launch credential rollout. See
+`docs/product/session-log.md` for the running history. Re-check before
+announcing STACKUP as generally available — this list is a decision
+record, not a one-time gate.
 
 ## Done
 
@@ -36,33 +38,50 @@ generally available — this list is a decision record, not a one-time gate.
   storage keys (never the user's filename), authorized-download-only
   (never a public URL).
 
-## Pending — external credentials, not code
+## Done since the Phase 9 snapshot
 
-Everything below is configuration, not a missing feature. The code path
-for each already works and is tested; it just needs real values on Render.
+- [x] **Cloudflare R2**: bucket `stackup-evidence` + a scoped
+  (read/write, single-bucket) API token created and set on `stackup-api`.
+  Evidence uploads now persist to real object storage.
+- [x] **Resend**: `RESEND_API_KEY` set. Password-reset/verification
+  emails send for real.
+- [x] **GitHub OAuth App**: `GITHUB_CLIENT_ID/SECRET` set. The
+  integration is connectable, not just gracefully 404ing.
+- [x] **`ENVIRONMENT=staging` → `production`** on `stackup-api`.
+- [x] **Redis** (Redis Cloud free tier, not Upstash — functionally
+  equivalent for our usage: Redis is a broker/signal only per ADR-005,
+  Postgres stays the source of truth) — `REDIS_URL` obtained and
+  documented, but see the worker gap right below before assuming the
+  queue is actually live.
 
-- [ ] **Cloudflare R2**: `STORAGE_ENDPOINT/BUCKET/ACCESS_KEY/SECRET_KEY`.
-  Until set, evidence uploads use the in-process store (lost on every
-  restart) and the app refuses to boot with `ENVIRONMENT=production`.
-- [ ] **Resend**: `RESEND_API_KEY` + a verified sending domain. Until set,
-  password-reset/verification emails are logged, not sent.
-- [ ] **Upstash Redis**: `REDIS_URL` for the `stackup-worker` service —
-  without it the worker can't start at all (fails fast by design), so the
-  daily `auto_end_expired_costs` job never runs.
-- [ ] **GitHub OAuth App**: `GITHUB_CLIENT_ID/SECRET`. Until set,
-  `/integrations/github/*` routes 404 gracefully rather than erroring —
-  the rest of the app is unaffected.
+## Pending
+
+- [ ] **`stackup-worker` Render service was never deployed.** `REDIS_URL`
+  currently sits unused in `stackup-api`'s env (harmless — nothing there
+  reads it) because Render's free tier doesn't include Background
+  Workers, only Web Services, and paying for one was declined for now.
+  Net effect: the daily `auto_end_expired_costs` job does not run
+  anywhere. Not a correctness bug — costs can be marked "ended" manually
+  in the UI — but it means nothing currently automates that. A
+  zero-cost alternative (protected endpoint on `stackup-api` + an
+  external free cron pinger) was proposed, not yet built. Do this before
+  building renewal/expiry alerts, which need the same building block.
 - [ ] **Migration-apply-on-deploy**: `alembic upgrade head` is not wired
   as a Render pre-deploy/release step (free-tier Render doesn't support
   it without a paid instance); migrations have been applied by hand via
-  the Neon MCP for every phase so far. Add it as a paid-tier
-  `preDeployCommand`, or keep the discipline of applying migrations
-  *before* merging the PR that depends on them.
-- [ ] **`ENVIRONMENT=staging` → `production`** on `stackup-api` once R2 is
-  configured (`render.yaml` comment documents the exact condition).
+  the Neon MCP for every phase so far, including migration
+  `0008_user_full_name`. Add it as a paid-tier `preDeployCommand`, or
+  keep the discipline of applying migrations *before* merging the PR
+  that depends on them.
 - [ ] **Custom domain** (`stackup.ar`) + cookie domain
   (`COOKIE_DOMAIN=.stackup.ar`) — currently running on the Render/Vercel
   default subdomains.
+- [ ] **i18n toggle** (read the UI in English) — explicitly deferred by
+  the product owner, Spanish-only is fine for now.
+- [ ] **Renewal/expiry alerts** — no advance warning before a cost's
+  `end_date` today (email or in-app). Scoping question open: how many
+  days ahead, which channel(s). Blocked on the same scheduler gap as the
+  worker item above.
 
 ## Deliberately not built yet (Phase 8 was the ceiling)
 
